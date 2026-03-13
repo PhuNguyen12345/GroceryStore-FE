@@ -1,8 +1,9 @@
 import AdminHeader from "./AdminHeader";
 import Sidebar from "./AdminSidebar";
 import AdminFooter from "./AdminFooter";
+import { Outlet } from "react-router-dom";
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout() {
   return (
     <div style={{ display: "flex", minHeight: "100vh", flexDirection: "column" }}>
       <Sidebar />
@@ -17,7 +18,7 @@ export default function AdminLayout({ children }) {
       >
         <AdminHeader />
         <main style={{ flex: 1, padding: "20px", overflowY: "auto" }}>
-          {children}
+          <Outlet />
         </main>
         <AdminFooter />
       </div>

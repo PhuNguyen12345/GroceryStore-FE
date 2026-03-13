@@ -43,11 +43,13 @@ export default function BrandForm({ show, onHide, onSubmit, initialData }) {
   };
 
   return (
-    <Modal show={show} onHide={onHide} centered>
-      <Modal.Header closeButton>
-        <Modal.Title>{initialData ? "Cập nhật thương hiệu" : "Thêm thương hiệu"}</Modal.Title>
+    <Modal show={show} onHide={onHide} centered backdrop="static">
+      <Modal.Header closeButton className="border-bottom-0 pb-0">
+        <Modal.Title className="fw-bold fs-5">
+          {initialData ? "Cập nhật thương hiệu" : "Thêm thương hiệu mới"}
+        </Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body className="pt-3">
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
             <Form.Label>Tên thương hiệu *</Form.Label>
@@ -87,12 +89,12 @@ export default function BrandForm({ show, onHide, onSubmit, initialData }) {
             />
           </Form.Group>
 
-          <div className="d-flex gap-2">
-            <Button variant="primary" type="submit" disabled={loading}>
-              {loading ? "Đang lưu..." : "Lưu"}
-            </Button>
-            <Button variant="secondary" onClick={onHide}>
+          <div className="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
+            <Button variant="light" onClick={onHide} className="px-4 fw-medium text-secondary border">
               Huỷ
+            </Button>
+            <Button variant="primary" type="submit" disabled={loading} className="px-4 fw-medium shadow-sm">
+              {loading ? "Đang lưu..." : "Lưu thay đổi"}
             </Button>
           </div>
         </Form>

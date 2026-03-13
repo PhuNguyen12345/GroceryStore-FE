@@ -109,41 +109,48 @@ export default function BrandPage() {
   };
 
   return (
-    <AdminLayout>
-      <Container fluid>
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="fw-bold">Quản lý thương hiệu</h2>
-          <Button
-            variant="success"
-            onClick={() => handleOpenForm()}
-            className="d-flex align-items-center gap-2"
-          >
-            <FaPlus /> Thêm thương hiệu
-          </Button>
-        </div>
+      <>
+      <Container fluid className="py-4">
+        {/* Header & Toolbar */}
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+          <div>
+            <h2 className="fw-bold mb-1 text-dark">Thương hiệu</h2>
+            <p className="text-muted mb-0">Quản lý các thương hiệu sản phẩm của cửa hàng</p>
+          </div>
 
-        {error && <Alert variant="danger">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
-
-        <Card className="shadow-sm border-0 mb-4">
-          <Card.Body>
-            <Form onSubmit={handleSearch}>
-              <InputGroup>
+          <div className="d-flex gap-2 align-items-center">
+            <Form onSubmit={handleSearch} className="m-0">
+              <InputGroup className="shadow-sm">
                 <Form.Control
-                  placeholder="Tìm kiếm tên thương hiệu..."
+                  placeholder="Tìm kiếm..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  className="border-0"
+                  style={{ minWidth: "200px" }}
                 />
-                <Button variant="outline-secondary" type="submit">
-                  <FaSearch /> Tìm kiếm
+                <Button variant="light" type="submit" className="border-0 border-start bg-white text-secondary">
+                  <FaSearch />
                 </Button>
               </InputGroup>
             </Form>
-          </Card.Body>
-        </Card>
 
-        <Card className="shadow-sm border-0">
-          <Card.Body>
+            <Button
+              variant="primary"
+              onClick={() => handleOpenForm()}
+              className="d-flex align-items-center gap-2 shadow-sm fw-semibold"
+            >
+              <FaPlus /> Thêm mới
+            </Button>
+          </div>
+        </div>
+
+        {/* Alerts */}
+        {error && <Alert variant="danger" className="shadow-sm border-0">{error}</Alert>}
+        {success && <Alert variant="success" className="shadow-sm border-0">{success}</Alert>}
+
+        {/* Data Card */}
+        <Card className="shadow-sm border-0 rounded-3 overflow-hidden">
+          <Card.Body className="p-0">
             <BrandList
               brands={brands}
               loading={loading}
@@ -155,23 +162,29 @@ export default function BrandPage() {
         </Card>
 
         {/* Pagination */}
-        <div className="d-flex justify-content-center gap-2 mt-4">
-          <Button
-            disabled={page === 0}
-            onClick={() => setPage(page - 1)}
-          >
-            Trang trước
-          </Button>
-          <span className="py-2 px-3 bg-light rounded">
-            Trang {page + 1} / {totalPages}
-          </span>
-          <Button
-            disabled={page >= totalPages - 1}
-            onClick={() => setPage(page + 1)}
-          >
-            Trang sau
-          </Button>
-        </div>
+        {totalPages > 1 && (
+          <div className="d-flex justify-content-center gap-2 mt-4 align-items-center">
+            <Button
+              variant="outline-secondary"
+              className="bg-white border-0 shadow-sm"
+              disabled={page === 0}
+              onClick={() => setPage(page - 1)}
+            >
+              Trang trước
+            </Button>
+            <span className="py-2 px-3 fw-medium text-muted">
+              {page + 1} / {totalPages}
+            </span>
+            <Button
+              variant="outline-secondary"
+              className="bg-white border-0 shadow-sm"
+              disabled={page >= totalPages - 1}
+              onClick={() => setPage(page + 1)}
+            >
+              Trang sau
+            </Button>
+          </div>
+        )}
       </Container>
 
       <BrandForm
@@ -180,6 +193,6 @@ export default function BrandPage() {
         onSubmit={handleSubmitForm}
         initialData={editingBrand}
       />
-    </AdminLayout>
+      </>
   );
 }
