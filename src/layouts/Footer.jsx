@@ -9,15 +9,15 @@ export default function Footer() {
       className="mt-5 border-top text-white py-5"
       style={{
         background:
-          "radial-gradient(circle at 12% 18%, rgba(34, 197, 94, 0.14) 0%, rgba(34, 197, 94, 0) 36%), radial-gradient(circle at 88% 12%, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 34%), linear-gradient(145deg, #0b1220 0%, #0f1f1b 45%, #133129 100%)",
+          "radial-gradient(circle at 16% 18%, rgba(44, 154, 103, 0.28) 0%, rgba(44, 154, 103, 0) 38%), linear-gradient(145deg, #0f3f2c 0%, #145a3a 48%, #1a7a4d 100%)",
       }}
     >
       <Container>
-        <div className="rounded-4 border border-light border-opacity-25 bg-white bg-opacity-5 p-4 p-md-5 mb-4 shadow">
+        <div className="rounded-4 border border-light border-opacity-25 bg-white bg-opacity-10 p-4 p-md-5 mb-4 shadow-sm">
           <Row className="align-items-center g-3">
             <Col lg={8}>
               <h4 className="fw-bold mb-2">GroceryStore - Tươi ngon mỗi ngày</h4>
-              <p className="mb-0 text-white-50">
+              <p className="mb-0 text-white">
                 Không gian mua sắm thực phẩm tiện lợi cho gia đình: tươi sạch, giá hợp lý
                 và dịch vụ nhanh chóng.
               </p>
@@ -44,31 +44,31 @@ export default function Footer() {
         <Row className="g-4">
           <Col lg={4} md={6}>
             <h5 className="fw-bold mb-3">GroceryStore</h5>
-            <p className="text-white-50 mb-3">
+            <p className="text-white mb-3">
               Hệ thống cửa hàng tập trung vào thực phẩm tươi sống, hàng tiêu dùng thiết
               yếu và ưu đãi định kỳ cho khách hàng.
             </p>
-            <p className="mb-2 d-flex align-items-center gap-2 text-white-50 small">
+            <p className="mb-2 d-flex align-items-center gap-2 text-white small">
               <MapPin size={15} />
               123 Nguyễn Trãi, Quận 1, TP.HCM
             </p>
           </Col>
 
           <Col lg={4} md={6}>
-            <h6 className="text-uppercase fw-semibold text-white-50 mb-3">Chính sách</h6>
+            <h6 className="text-uppercase fw-semibold text-white mb-3">Chính sách</h6>
             <ul className="list-unstyled mb-0 d-flex flex-column gap-2">
               <li>
-                <Link to="/shipping-policy" className="text-decoration-none text-white">
+                <Link to="/shipping-policy" className="text-decoration-none text-white fw-medium">
                   Chính sách giao hàng
                 </Link>
               </li>
               <li>
-                <Link to="/return-policy" className="text-decoration-none text-white">
+                <Link to="/return-policy" className="text-decoration-none text-white fw-medium">
                   Chính sách đổi trả
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="text-decoration-none text-white">
+                <Link to="/terms" className="text-decoration-none text-white fw-medium">
                   Điều khoản sử dụng
                 </Link>
               </li>
@@ -76,12 +76,12 @@ export default function Footer() {
           </Col>
 
           <Col lg={4} md={12}>
-            <h6 className="text-uppercase fw-semibold text-white-50 mb-3">Liên hệ</h6>
-            <p className="mb-2 d-flex align-items-center gap-2 text-white-50">
+            <h6 className="text-uppercase fw-semibold text-white mb-3">Liên hệ</h6>
+            <p className="mb-2 d-flex align-items-center gap-2 text-white">
               <Phone size={16} />
               1900 1234
             </p>
-            <p className="mb-3 d-flex align-items-center gap-2 text-white-50">
+            <p className="mb-3 d-flex align-items-center gap-2 text-white">
               <Mail size={16} />
               support@grocerystore.vn
             </p>
@@ -98,7 +98,7 @@ export default function Footer() {
         </Row>
 
         <hr className="my-4 border-light border-opacity-25" />
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 text-white-50 small">
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 text-white small">
           <span>© {new Date().getFullYear()} GroceryStore. Đã đăng ký bản quyền.</span>
           <span>Phục vụ khách hàng từ 7:00 - 22:00 mỗi ngày.</span>
         </div>
@@ -106,3 +106,4 @@ export default function Footer() {
     </footer>
   );
 }
+

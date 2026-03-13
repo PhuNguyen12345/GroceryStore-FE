@@ -8,7 +8,7 @@ export default function Header() {
     <header className="border-bottom shadow-sm">
       <div
         className="py-3 text-white"
-        style={{ background: "linear-gradient(135deg, #157347 0%, #198754 55%, #249a63 100%)" }}
+        style={{ background: "linear-gradient(135deg, #145a3a 0%, #1a7a4d 55%, #2c9a67 100%)" }}
       >
         <Container>
           <Row className="align-items-center gy-3">
@@ -88,3 +88,4 @@ export default function Header() {
     </header>
   );
 }
+

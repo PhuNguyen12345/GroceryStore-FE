@@ -1,30 +1,25 @@
 import { useState, useEffect } from "react";
-import { Form, Button, Modal } from "react-bootstrap";
+import { Form, Modal } from "react-bootstrap";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { brandService } from "../../../core/api/brandService";
 
+const EMPTY_FORM = {
+  name: "",
+  description: "",
+  logoUrl: "",
+  isActive: true,
+};
+
 export default function BrandForm({ show, onHide, onSubmit, initialData }) {
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    logoUrl: "",
-    isActive: true,
-  });
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
 
-  // Cập nhật form khi initialData thay đổi
   useEffect(() => {
-    if (initialData) {
-      setFormData(initialData);
-    } else {
-      setFormData({
-        name: "",
-        description: "",
-        logoUrl: "",
-        isActive: true,
-      });
-    }
+    setFormData(initialData || EMPTY_FORM);
     setSelectedFile(null);
   }, [initialData, show]);
 
@@ -38,22 +33,23 @@ export default function BrandForm({ show, onHide, onSubmit, initialData }) {
     setPreviewUrl(brandService.toAbsoluteMediaUrl(formData.logoUrl));
   }, [selectedFile, formData.logoUrl]);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
+  const handleChange = (event) => {
+    const { name, value, type, checked } = event.target;
+    setFormData((prev) => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value,
-    });
+    }));
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0] || null;
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0] || null;
     setSelectedFile(file);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setLoading(true);
+
     try {
       let nextLogoUrl = formData.logoUrl;
 
@@ -63,9 +59,10 @@ export default function BrandForm({ show, onHide, onSubmit, initialData }) {
       }
 
       await onSubmit({ ...formData, logoUrl: nextLogoUrl });
-      setFormData({ name: "", description: "", logoUrl: "", isActive: true });
+      setFormData(EMPTY_FORM);
       setSelectedFile(null);
       setPreviewUrl("");
+      setShowPreviewModal(false);
       onHide();
     } finally {
       setLoading(false);
@@ -78,10 +75,10 @@ export default function BrandForm({ show, onHide, onSubmit, initialData }) {
         <Modal.Title>{initialData ? "Cập nhật thương hiệu" : "Thêm thương hiệu"}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3">
-            <Form.Label>Tên thương hiệu *</Form.Label>
-            <Form.Control
+        <Form onSubmit={handleSubmit} className="d-flex flex-column gap-3">
+          <div>
+            <Form.Label className="fw-semibold">Tên thương hiệu *</Form.Label>
+            <Input
               type="text"
               name="name"
               value={formData.name}
@@ -91,24 +88,24 @@ export default function BrandForm({ show, onHide, onSubmit, initialData }) {
               maxLength={100}
             />
             <small className="text-muted">Tối đa 100 ký tự</small>
-          </Form.Group>
+          </div>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Mô tả</Form.Label>
+          <div>
+            <Form.Label className="fw-semibold">Mô tả</Form.Label>
             <Form.Control
               as="textarea"
               name="description"
-              value={formData.description}
+              value={formData.description || ""}
               onChange={handleChange}
               placeholder="Nhập mô tả thương hiệu"
               rows={3}
               maxLength={1000}
             />
             <small className="text-muted">Tối đa 1000 ký tự</small>
-          </Form.Group>
+          </div>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Logo</Form.Label>
+          <div>
+            <Form.Label className="fw-semibold">Logo</Form.Label>
             <Form.Control
               type="file"
               accept="image/png,image/jpeg,image/jpg,image/webp"
@@ -117,34 +114,63 @@ export default function BrandForm({ show, onHide, onSubmit, initialData }) {
             <small className="text-muted">Hỗ trợ JPG, JPEG, PNG, WEBP</small>
             {previewUrl && (
               <div className="mt-2">
-                <small>Xem trước:</small>
-                <div>
-                  <img src={previewUrl} alt="Logo preview" style={{height: '60px', objectFit: 'contain', marginTop: '5px'}} onError={(e) => e.target.style.display = 'none'} />
+                <small className="text-muted">Xem trước:</small>
+                <div className="mt-1">
+                  <img
+                    src={previewUrl}
+                    alt="Logo preview"
+                    style={{ height: "64px", objectFit: "contain", cursor: "zoom-in" }}
+                    role="button"
+                    title="Click de xem anh lon"
+                    onClick={() => setShowPreviewModal(true)}
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
                 </div>
               </div>
             )}
-          </Form.Group>
+          </div>
 
-          <Form.Group className="mb-3">
-            <Form.Check
-              type="checkbox"
-              name="isActive"
-              label="Kích hoạt"
-              checked={formData.isActive}
-              onChange={handleChange}
-            />
-          </Form.Group>
+          <Form.Check
+            type="switch"
+            name="isActive"
+            label="Kích hoạt"
+            checked={formData.isActive}
+            onChange={handleChange}
+          />
 
-          <div className="d-flex gap-2">
-            <Button variant="primary" type="submit" disabled={loading}>
-              {loading ? "Đang lưu..." : "Lưu"}
+          <div className="d-flex justify-content-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onHide}
+              disabled={loading}
+              className="admin-cancel-btn"
+            >
+              Hủy
             </Button>
-            <Button variant="secondary" onClick={onHide}>
-              Huỷ
+            <Button type="submit" disabled={loading} className="admin-save-btn">
+              {loading ? "Đang lưu..." : "Lưu"}
             </Button>
           </div>
         </Form>
       </Modal.Body>
+
+      <Modal show={showPreviewModal} onHide={() => setShowPreviewModal(false)} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Xem anh logo</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          {previewUrl && (
+            <img
+              src={previewUrl}
+              alt="Logo preview large"
+              style={{ maxWidth: "100%", maxHeight: "70vh", objectFit: "contain" }}
+            />
+          )}
+        </Modal.Body>
+      </Modal>
     </Modal>
   );
 }

@@ -1,6 +1,5 @@
-import { Nav } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { useState } from "react";
+import { NavLink } from "react-router-dom";
 import {
   FaChartBar,
   FaBox,
@@ -16,318 +15,102 @@ import {
   FaBullhorn,
 } from "react-icons/fa";
 
+const navItems = [
+  { to: "/admin/orders", icon: FaShoppingCart, label: "Đơn hàng" },
+  { to: "/admin/customers", icon: FaUsers, label: "Khách hàng" },
+  { to: "/admin/ads", icon: FaBullhorn, label: "Quảng cáo" },
+  { to: "/admin/promotions", icon: FaTag, label: "Khuyến mãi" },
+  { to: "/admin/reports", icon: FaFileAlt, label: "Báo cáo" },
+];
+
+const productItems = [
+  { to: "/admin/products", icon: FaWarehouse, label: "Quản lý sản phẩm" },
+  { to: "/admin/brands", icon: FaBriefcase, label: "Quản lý thương hiệu" },
+  { to: "/admin/categories", icon: FaListUl, label: "Quản lý danh mục" },
+  { to: "/admin/product-units", icon: FaBox, label: "Quản lý đơn vị sản phẩm" },
+];
+
 export default function Sidebar() {
-  const [expandedMenu, setExpandedMenu] = useState(null);
+  const [expandedMenu, setExpandedMenu] = useState("product");
 
-  const toggleMenu = (menu) => {
-    setExpandedMenu(expandedMenu === menu ? null : menu);
-  };
   return (
-    <div
-      style={{
-        position: "fixed",
-        left: 0,
-        top: 0,
-        width: "250px",
-        height: "100vh",
-        background: "linear-gradient(180deg, #228B22 0%, #1a6a1a 100%)",
-        color: "white",
-        padding: "20px 0",
-        overflowY: "auto",
-        zIndex: 1000,
-      }}
-    >
-      <Nav className="flex-column">
-        <Nav.Link
-          as={Link}
+    <aside className="admin-sidebar">
+      <div className="admin-sidebar-brand">
+        <strong>GroceryStore Admin</strong>
+        <span>Bảng điều khiển quản trị</span>
+      </div>
+
+      <div className="py-2">
+        <NavLink
           to="/admin"
-          className="d-flex align-items-center gap-2"
-          style={{
-            color: "rgba(255, 255, 255, 0.8)",
-            padding: "12px 20px",
-            textDecoration: "none",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "white";
-            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "rgba(255, 255, 255, 0.8)";
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
+          end
+          className={({ isActive }) => `admin-nav-link ${isActive ? "active" : ""}`}
         >
-          <FaChartBar size={18} />
+          <FaChartBar size={16} />
           <span>Bảng điều khiển</span>
-        </Nav.Link>
+        </NavLink>
 
-        {/* Product Dropdown Menu */}
-        <div>
-          <button
-            onClick={() => toggleMenu("product")}
-            className="d-flex align-items-center gap-2 w-100"
+        <button
+          type="button"
+          onClick={() => setExpandedMenu(expandedMenu === "product" ? null : "product")}
+          className="admin-nav-toggle"
+        >
+          <FaBox size={16} />
+          <span>Sản phẩm</span>
+          <FaChevronDown
+            size={12}
             style={{
-              color: "rgba(255, 255, 255, 0.8)",
-              padding: "12px 20px",
-              textDecoration: "none",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              fontWeight: "500",
+              marginLeft: "auto",
+              transform: expandedMenu === "product" ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.2s ease",
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "white";
-              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "rgba(255, 255, 255, 0.8)";
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+          />
+        </button>
+
+        {expandedMenu === "product" && (
+          <div className="admin-submenu">
+            {productItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `admin-submenu-link ${isActive ? "active" : ""}`
+                  }
+                >
+                  <Icon size={13} />
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+        )}
+
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) => `admin-nav-link ${isActive ? "active" : ""}`}
+            >
+              <Icon size={16} />
+              <span>{item.label}</span>
+            </NavLink>
+          );
+        })}
+
+        <div className="mt-3 pt-2" style={{ borderTop: "1px solid rgba(255, 255, 255, 0.18)" }}>
+          <NavLink
+            to="/admin/settings"
+            className={({ isActive }) => `admin-nav-link ${isActive ? "active" : ""}`}
           >
-            <FaBox size={18} />
-            <span>Sản phẩm</span>
-            <FaChevronDown
-              size={12}
-              style={{
-                marginLeft: "auto",
-                transform: expandedMenu === "product" ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.2s ease",
-              }}
-            />
-          </button>
-
-          {expandedMenu === "product" && (
-            <div style={{ backgroundColor: "rgba(255, 255, 255, 0.05)" }}>
-              <Nav.Link
-                as={Link}
-                to="/admin/products"
-                className="d-flex align-items-center gap-2"
-                style={{
-                  color: "rgba(255, 255, 255, 0.7)",
-                  padding: "10px 20px 10px 50px",
-                  textDecoration: "none",
-                  fontSize: "14px",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "white";
-                  e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <FaWarehouse size={14} />
-                <span>Quản lý sản phẩm</span>
-              </Nav.Link>
-
-              <Nav.Link
-                as={Link}
-                to="/admin/brands"
-                className="d-flex align-items-center gap-2"
-                style={{
-                  color: "rgba(255, 255, 255, 0.7)",
-                  padding: "10px 20px 10px 50px",
-                  textDecoration: "none",
-                  fontSize: "14px",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "white";
-                  e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <FaBriefcase size={14} />
-                <span>Quản lý thương hiệu</span>
-              </Nav.Link>
-
-              <Nav.Link
-                as={Link}
-                to="/admin/categories"
-                className="d-flex align-items-center gap-2"
-                style={{
-                  color: "rgba(255, 255, 255, 0.7)",
-                  padding: "10px 20px 10px 50px",
-                  textDecoration: "none",
-                  fontSize: "14px",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "white";
-                  e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <FaListUl size={14} />
-                <span>Quản lý danh mục</span>
-              </Nav.Link>
-
-              <Nav.Link
-                as={Link}
-                to="/admin/product-units"
-                className="d-flex align-items-center gap-2"
-                style={{
-                  color: "rgba(255, 255, 255, 0.7)",
-                  padding: "10px 20px 10px 50px",
-                  textDecoration: "none",
-                  fontSize: "14px",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "white";
-                  e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <FaBox size={14} />
-                <span>Quản lý đơn vị sản phẩm</span>
-              </Nav.Link>
-            </div>
-          )}
+            <FaCog size={16} />
+            <span>Cài đặt</span>
+          </NavLink>
         </div>
-
-        <Nav.Link
-          as={Link}
-          to="/admin/orders"
-          className="d-flex align-items-center gap-2"
-          style={{
-            color: "rgba(255, 255, 255, 0.8)",
-            padding: "12px 20px",
-            textDecoration: "none",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "white";
-            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "rgba(255, 255, 255, 0.8)";
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          <FaShoppingCart size={18} />
-          <span>Đơn hàng</span>
-        </Nav.Link>
-
-        {/* Customers link above promotions */}
-        <Nav.Link
-          as={Link}
-          to="/admin/customers"
-          className="d-flex align-items-center gap-2"
-          style={{
-            color: "rgba(255, 255, 255, 0.8)",
-            padding: "12px 20px",
-            textDecoration: "none",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "white";
-            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "rgba(255, 255, 255, 0.8)";
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          <FaUsers size={18} />
-          <span>Khách hàng</span>
-        </Nav.Link>
-
-        {/* Ads link above promotions */}
-        <Nav.Link
-          as={Link}
-          to="/admin/ads"
-          className="d-flex align-items-center gap-2"
-          style={{
-            color: "rgba(255, 255, 255, 0.8)",
-            padding: "12px 20px",
-            textDecoration: "none",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "white";
-            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "rgba(255, 255, 255, 0.8)";
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          <FaBullhorn size={18} />
-          <span>Quảng cáo</span>
-        </Nav.Link>
-
-        <Nav.Link
-          as={Link}
-          to="/admin/promotions"
-          className="d-flex align-items-center gap-2"
-          style={{
-            color: "rgba(255, 255, 255, 0.8)",
-            padding: "12px 20px",
-            textDecoration: "none",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "white";
-            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "rgba(255, 255, 255, 0.8)";
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          <FaTag size={18} />
-          <span>Khuyến mãi</span>
-        </Nav.Link>
-
-        <Nav.Link
-          as={Link}
-          to="/admin/reports"
-          className="d-flex align-items-center gap-2"
-          style={{
-            color: "rgba(255, 255, 255, 0.8)",
-            padding: "12px 20px",
-            textDecoration: "none",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "white";
-            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "rgba(255, 255, 255, 0.8)";
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          <FaFileAlt size={18} />
-          <span>Báo cáo</span>
-        </Nav.Link>
-
-        <Nav.Link
-          as={Link}
-          to="/admin/settings"
-          className="d-flex align-items-center gap-2"
-          style={{
-            color: "rgba(255, 255, 255, 0.8)",
-            padding: "12px 20px",
-            borderTop: "1px solid rgba(255, 255, 255, 0.2)",
-            marginTop: "12px",
-            textDecoration: "none",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "white";
-            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "rgba(255, 255, 255, 0.8)";
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          <FaCog size={18} />
-          <span>Cài đặt</span>
-        </Nav.Link>
-      </Nav>
-    </div>
+      </div>
+    </aside>
   );
 }
