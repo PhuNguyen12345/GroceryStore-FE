@@ -1,72 +1,91 @@
-import { Container, Row, Col, Form, Button, Navbar, Nav } from "react-bootstrap";
-import { Link } from "react-router-dom";
-import { FaSearch, FaShoppingCart, FaUser } from "react-icons/fa";
+import { Container, Row, Col, Navbar, Nav } from "react-bootstrap";
+import { Link, NavLink } from "react-router-dom";
+import { Search, Menu, Tag } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function Header() {
   return (
-    <>
-      <div style={{ backgroundColor: "#228B22" }} className="py-2 text-white">
+    <header className="gs-header border-bottom bg-white">
+      <div className="gs-header-top py-3">
         <Container>
-          <Row className="align-items-center">
-            <Col md={2}>
-              <Link to="/" className="text-white text-decoration-none fw-bold fs-4">
+          <Row className="align-items-center gy-3">
+            <Col lg={3} md={4} sm={12}>
+              <Link
+                to="/"
+                className="text-decoration-none fw-bold fs-3 text-success"
+              >
                 GroceryStore
               </Link>
             </Col>
 
-            <Col md={4} className="d-flex justify-content-center">
-              <Form className="d-flex w-100" style={{ maxWidth: "300px" }}>
-                <Form.Control
-                  type="text"
-                  placeholder="Tìm kiếm sản phẩm..."
-                  size="sm"
-                  className="rounded-start"
-                />
-                <Button
-                  variant="warning"
-                  size="sm"
-                  className="rounded-end d-flex align-items-center justify-content-center"
-                  style={{ width: "40px" }}
-                >
-                  <FaSearch />
+            <Col lg={5} md={8} sm={12}>
+              <div className="d-flex align-items-center gap-2">
+                <div className="position-relative w-100">
+                  <Search
+                    size={18}
+                    className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"
+                  />
+                  <Input
+                    type="text"
+                    placeholder="Tìm kiếm sản phẩm..."
+                    aria-label="Search products"
+                    className="ps-5"
+                  />
+                </div>
+
+                <Button type="button" className="shrink-0">
+                  Tìm
                 </Button>
-              </Form>
+              </div>
             </Col>
 
-            <Col md={6} className="d-flex justify-content-end align-items-center">
-              <Link to="/login" className="text-white me-4 text-decoration-none">
-                <FaUser className="me-1" />
-                Đăng nhập
-              </Link>
-
-              <Link to="/register" className="text-white me-4 text-decoration-none">
-                Đăng ký
-              </Link>
-
-              <Link to="/cart" className="text-white text-decoration-none">
-                <FaShoppingCart className="me-1" />
-              </Link>
+            <Col lg={4} sm={12}>
+              <div className="rounded-4 border bg-light px-3 py-2 h-100">
+                <div className="d-inline-flex align-items-center gap-2 rounded-pill bg-warning-subtle text-dark px-3 py-1 fw-medium small mb-2">
+                  <Tag size={14} />
+                  Khách tham quan
+                </div>
+                <p className="mb-0 text-muted small">
+                  Xem danh mục, giá và chương trình khuyến mãi
+                </p>
+              </div>
             </Col>
           </Row>
         </Container>
       </div>
 
-      <Navbar bg="light" expand="lg" className="border-bottom">
+      <Navbar expand="lg" bg="white" className="gs-main-nav py-2" sticky="top">
         <Container>
-          <Navbar.Toggle />
-          <Navbar.Collapse>
-            <Nav className="me-auto">
-              <Nav.Link as={Link} to="/">Trang chủ</Nav.Link>
-              <Nav.Link as={Link} to="/products">Hàng hóa</Nav.Link>
-              <Nav.Link as={Link} to="/promotions">Khuyến mãi</Nav.Link>
-              <Nav.Link as={Link} to="/blog">Blog</Nav.Link>
-              <Nav.Link as={Link} to="/hot-deal" className="text-danger fw-bold">
+          <Navbar.Toggle aria-controls="header-nav">
+            <Menu size={20} />
+          </Navbar.Toggle>
+
+          <Navbar.Collapse id="header-nav">
+            <Nav className="me-auto gap-lg-2">
+              <Nav.Link as={NavLink} to="/" end>
+                Trang chủ
+              </Nav.Link>
+
+              <Nav.Link as={NavLink} to="/products">
+                Hàng hóa
+              </Nav.Link>
+
+              <Nav.Link as={NavLink} to="/promotions">
+                Khuyến mãi
+              </Nav.Link>
+
+              <Nav.Link as={NavLink} to="/blog">
+                Blog
+              </Nav.Link>
+
+              <Nav.Link as={NavLink} to="/hot-deal" className="fw-semibold text-danger">
                 Hot Deal
               </Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
-    </>
+    </header>
   );
 }

@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
 import { Form, Button, Modal } from "react-bootstrap";
+import { brandService } from "../../../core/api/brandService";
 
 export default function BrandForm({ show, onHide, onSubmit, initialData }) {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    logoUrl: "",
     isActive: true,
   });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Cập nhật form khi initialData thay đổi
@@ -17,10 +21,22 @@ export default function BrandForm({ show, onHide, onSubmit, initialData }) {
       setFormData({
         name: "",
         description: "",
+        logoUrl: "",
         isActive: true,
       });
     }
+    setSelectedFile(null);
   }, [initialData, show]);
+
+  useEffect(() => {
+    if (selectedFile) {
+      const objectUrl = URL.createObjectURL(selectedFile);
+      setPreviewUrl(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+
+    setPreviewUrl(brandService.toAbsoluteMediaUrl(formData.logoUrl));
+  }, [selectedFile, formData.logoUrl]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -30,12 +46,26 @@ export default function BrandForm({ show, onHide, onSubmit, initialData }) {
     });
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setSelectedFile(file);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await onSubmit(formData);
-      setFormData({ name: "", description: "", isActive: true });
+      let nextLogoUrl = formData.logoUrl;
+
+      if (selectedFile) {
+        const uploadResult = await brandService.uploadBrandLogo(selectedFile, formData.logoUrl);
+        nextLogoUrl = uploadResult.url;
+      }
+
+      await onSubmit({ ...formData, logoUrl: nextLogoUrl });
+      setFormData({ name: "", description: "", logoUrl: "", isActive: true });
+      setSelectedFile(null);
+      setPreviewUrl("");
       onHide();
     } finally {
       setLoading(false);
@@ -75,6 +105,24 @@ export default function BrandForm({ show, onHide, onSubmit, initialData }) {
               maxLength={1000}
             />
             <small className="text-muted">Tối đa 1000 ký tự</small>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Logo</Form.Label>
+            <Form.Control
+              type="file"
+              accept="image/png,image/jpeg,image/jpg,image/webp"
+              onChange={handleFileChange}
+            />
+            <small className="text-muted">Hỗ trợ JPG, JPEG, PNG, WEBP</small>
+            {previewUrl && (
+              <div className="mt-2">
+                <small>Xem trước:</small>
+                <div>
+                  <img src={previewUrl} alt="Logo preview" style={{height: '60px', objectFit: 'contain', marginTop: '5px'}} onError={(e) => e.target.style.display = 'none'} />
+                </div>
+              </div>
+            )}
           </Form.Group>
 
           <Form.Group className="mb-3">

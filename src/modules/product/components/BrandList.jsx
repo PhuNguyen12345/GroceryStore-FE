@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
 import { Table, Button, Badge, Spinner, Alert } from "react-bootstrap";
 import { FaEdit, FaTrash, FaUndo } from "react-icons/fa";
+import { brandService } from "../../../core/api/brandService";
 
 export default function BrandList({ brands, loading, onEdit, onDelete, onRestore, onLoadMore }) {
   return (
@@ -22,6 +22,7 @@ export default function BrandList({ brands, loading, onEdit, onDelete, onRestore
           <thead>
             <tr>
               <th>ID</th>
+              <th>Logo</th>
               <th>Tên</th>
               <th>Mô tả</th>
               <th>Trạng thái</th>
@@ -33,6 +34,13 @@ export default function BrandList({ brands, loading, onEdit, onDelete, onRestore
             {brands.map((brand) => (
               <tr key={brand.id}>
                 <td>{brand.id}</td>
+                <td>
+                  {brand.logoUrl ? (
+                    <img src={brandService.toAbsoluteMediaUrl(brand.logoUrl)} alt={brand.name} style={{height: '40px', objectFit: 'contain'}} />
+                  ) : (
+                    <span className="text-muted">-</span>
+                  )}
+                </td>
                 <td>{brand.name}</td>
                 <td>{brand.description?.substring(0, 50)}...</td>
                 <td>

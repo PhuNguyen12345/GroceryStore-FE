@@ -3,10 +3,10 @@ import Footer from "./Footer";
 
 export default function DashboardLayout({ children }) {
   return (
-    <div className="d-flex flex-column min-vh-100">
+    <div className="d-flex flex-column min-vh-100 gs-dashboard-layout">
       <Header />
 
-      <main className="flex-grow-1" style={{ backgroundColor: "#f8f9fa" }}>
+      <main className="flex-grow-1 gs-layout-main">
         {children}
       </main>
 
