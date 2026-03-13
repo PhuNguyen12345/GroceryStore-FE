@@ -1,61 +1,64 @@
 import { Container, Row, Col, Navbar, Nav } from "react-bootstrap";
 import { Link, NavLink } from "react-router-dom";
-import { Search, Menu, Tag } from "lucide-react";
+import { Search, Menu, ShieldCheck, Clock3 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
 export default function Header() {
   return (
-    <header className="gs-header border-bottom bg-white">
-      <div className="gs-header-top py-3">
+    <header className="border-bottom shadow-sm">
+      <div
+        className="py-3 text-white"
+        style={{ background: "linear-gradient(135deg, #157347 0%, #198754 55%, #249a63 100%)" }}
+      >
         <Container>
           <Row className="align-items-center gy-3">
             <Col lg={3} md={4} sm={12}>
-              <Link
-                to="/"
-                className="text-decoration-none fw-bold fs-3 text-success"
-              >
-                GroceryStore
+              <Link to="/" className="text-decoration-none text-white">
+                <div className="fw-bold fs-3 lh-1">GroceryStore</div>
+                <small className="text-white-50">Thực phẩm tươi mỗi ngày</small>
               </Link>
             </Col>
 
             <Col lg={5} md={8} sm={12}>
-              <div className="d-flex align-items-center gap-2">
+              <form
+                className="w-100"
+                role="search"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                }}
+              >
                 <div className="position-relative w-100">
                   <Search
                     size={18}
-                    className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"
+                    className="position-absolute top-50 start-0 translate-middle-y ms-3 text-dark"
                   />
                   <Input
                     type="text"
                     placeholder="Tìm kiếm sản phẩm..."
-                    aria-label="Search products"
-                    className="ps-5"
+                    aria-label="Tìm kiếm sản phẩm"
+                    className="ps-5 bg-white text-dark border-white shadow-sm"
                   />
                 </div>
-
-                <Button type="button" className="shrink-0">
-                  Tìm
-                </Button>
-              </div>
+              </form>
             </Col>
 
             <Col lg={4} sm={12}>
-              <div className="rounded-4 border bg-light px-3 py-2 h-100">
-                <div className="d-inline-flex align-items-center gap-2 rounded-pill bg-warning-subtle text-dark px-3 py-1 fw-medium small mb-2">
-                  <Tag size={14} />
+              <div className="rounded-4 border border-light-subtle bg-white bg-opacity-10 px-3 py-2">
+                <div className="d-flex align-items-center gap-2 small fw-semibold text-white">
+                  <ShieldCheck size={15} />
                   Khách tham quan
                 </div>
-                <p className="mb-0 text-muted small">
-                  Xem danh mục, giá và chương trình khuyến mãi
-                </p>
+                <div className="mt-1 d-flex align-items-center gap-2 text-white-50 small">
+                  <Clock3 size={14} />
+                  Xem danh mục, giá bán và chương trình khuyến mãi
+                </div>
               </div>
             </Col>
           </Row>
         </Container>
       </div>
 
-      <Navbar expand="lg" bg="white" className="gs-main-nav py-2" sticky="top">
+      <Navbar expand="lg" bg="white" className="py-2" sticky="top" data-bs-theme="light">
         <Container>
           <Navbar.Toggle aria-controls="header-nav">
             <Menu size={20} />
@@ -63,22 +66,18 @@ export default function Header() {
 
           <Navbar.Collapse id="header-nav">
             <Nav className="me-auto gap-lg-2">
-              <Nav.Link as={NavLink} to="/" end>
+              <Nav.Link as={NavLink} to="/" end className="fw-medium text-dark">
                 Trang chủ
               </Nav.Link>
-
-              <Nav.Link as={NavLink} to="/products">
+              <Nav.Link as={NavLink} to="/products" className="fw-medium text-dark">
                 Hàng hóa
               </Nav.Link>
-
-              <Nav.Link as={NavLink} to="/promotions">
+              <Nav.Link as={NavLink} to="/promotions" className="fw-medium text-dark">
                 Khuyến mãi
               </Nav.Link>
-
-              <Nav.Link as={NavLink} to="/blog">
+              <Nav.Link as={NavLink} to="/blog" className="fw-medium text-dark">
                 Blog
               </Nav.Link>
-
               <Nav.Link as={NavLink} to="/hot-deal" className="fw-semibold text-danger">
                 Hot Deal
               </Nav.Link>
