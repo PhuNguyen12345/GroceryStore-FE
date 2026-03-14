@@ -18,8 +18,8 @@ import {
 const navItems = [
   { to: "/admin/orders", icon: FaShoppingCart, label: "Đơn hàng" },
   { to: "/admin/customers", icon: FaUsers, label: "Khách hàng" },
-  { to: "/admin/ads", icon: FaBullhorn, label: "Quảng cáo" },
-  { to: "/admin/promotions", icon: FaTag, label: "Khuyến mãi" },
+  { to: "/admin/promotions", icon: FaBullhorn, label: "Quảng cáo" },
+  { to: "/admin/vouchers", icon: FaTag, label: "Khuyến mãi" },
   { to: "/admin/reports", icon: FaFileAlt, label: "Báo cáo" },
 ];
 

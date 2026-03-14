@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Container, Card, Alert, Badge, Modal, Form } from "react-bootstrap";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import AdminLayout from "../../../layouts/AdminLayout";
-import PromotionList from "../components/PromotionList";
-import PromotionForm from "../components/PromotionForm";
-import { promotionService } from "../../../core/api/promotionService";
+import CustomerList from "../components/CustomerList";
+import CustomerForm from "../components/CustomerForm";
+import { customerService } from "../../../core/api/customerService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,42 +50,46 @@ function getErrorMessage(err, fallback) {
   return fallback || err?.message || "Đã có lỗi xảy ra";
 }
 
-export default function PromotionPage() {
-  const [promotions, setPromotions] = useState([]);
+export default function CustomerPage() {
+  const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [editingPromotion, setEditingPromotion] = useState(null);
+  const [editingCustomer, setEditingCustomer] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [tierFilter, setTierFilter] = useState("all");
   const [error, setError] = useState(null);
+  const [formError, setFormError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [deletingId, setDeletingId] = useState(null);
 
   const keyword = searchQuery.trim();
+  const hasFilter = activeFilter !== "all" || tierFilter !== "all";
+  const shouldUseSearch = Boolean(keyword) || hasFilter;
   const currentPage = page + 1;
   const pageItems = getPageItems(Math.max(totalPages, 1), currentPage);
 
-  const loadPromotions = async (targetPage = page) => {
+  const loadCustomers = async (targetPage = page) => {
     try {
       setLoading(true);
       setError(null);
 
-      let result;
+      const result = shouldUseSearch
+        ? await customerService.searchCustomers({
+            keyword,
+            isActive: activeFilter === "all" ? undefined : activeFilter === "true",
+            tier: tierFilter === "all" ? undefined : tierFilter,
+            page: targetPage,
+            size: PAGE_SIZE,
+          })
+        : await customerService.getAllCustomers(targetPage, PAGE_SIZE);
 
-      if (keyword) {
-        result = await promotionService.searchByName(keyword, targetPage, PAGE_SIZE);
-      } else if (activeFilter !== "all") {
-        result = await promotionService.filterByActive(activeFilter === "true", targetPage, PAGE_SIZE);
-      } else {
-        result = await promotionService.getAllPromotions(targetPage, PAGE_SIZE);
-      }
-
-      setPromotions(result.content || []);
+      setCustomers(result.content || []);
       setTotalPages(result.totalPages || 1);
     } catch (err) {
-      setError(getErrorMessage(err, "Không thể tải danh sách khuyến mãi"));
+      setError(getErrorMessage(err, "Không thể tải danh sách khách hàng"));
     } finally {
       setLoading(false);
     }
@@ -93,35 +97,38 @@ export default function PromotionPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      loadPromotions(page);
-    }, keyword ? 350 : 0);
+      loadCustomers(page);
+    }, shouldUseSearch && keyword ? 350 : 0);
 
     return () => clearTimeout(timer);
-  }, [page, keyword, activeFilter]);
+  }, [page, keyword, activeFilter, tierFilter, shouldUseSearch]);
 
   useEffect(() => {
     setPage(0);
-  }, [searchQuery, activeFilter]);
+  }, [searchQuery, activeFilter, tierFilter]);
 
-  const handleOpenForm = (promotion = null) => {
-    setEditingPromotion(promotion);
+  const handleOpenForm = (customer = null) => {
+    setEditingCustomer(customer);
+    setFormError(null);
     setShowForm(true);
   };
 
   const handleCloseForm = () => {
     setShowForm(false);
-    setEditingPromotion(null);
+    setEditingCustomer(null);
+    setFormError(null);
   };
 
   const handleSubmitForm = async (formData) => {
     try {
-      await promotionService.savePromotion(formData);
-      setSuccess(editingPromotion ? "Cập nhật khuyến mãi thành công" : "Thêm khuyến mãi thành công");
-      await loadPromotions(page);
+      await customerService.saveCustomer(formData);
+      setFormError(null);
+      setSuccess(editingCustomer ? "Cập nhật khách hàng thành công" : "Thêm khách hàng thành công");
+      await loadCustomers(page);
       handleCloseForm();
       setTimeout(() => setSuccess(null), 2500);
     } catch (err) {
-      setError(`Lỗi: ${getErrorMessage(err, "Không thể lưu khuyến mãi")}`);
+      setFormError(getErrorMessage(err, "Không thể lưu khách hàng"));
     }
   };
 
@@ -129,12 +136,12 @@ export default function PromotionPage() {
     if (!deletingId) return;
 
     try {
-      await promotionService.deletePromotion(deletingId);
-      setSuccess("Xóa khuyến mãi thành công");
-      await loadPromotions(page);
+      await customerService.deleteCustomer(deletingId);
+      setSuccess("Xóa khách hàng thành công");
+      await loadCustomers(page);
       setTimeout(() => setSuccess(null), 2500);
     } catch (err) {
-      setError(`Lỗi khi xóa: ${getErrorMessage(err, "Không thể xóa khuyến mãi")}`);
+      setError(`Lỗi khi xóa: ${getErrorMessage(err, "Không thể xóa khách hàng")}`);
     } finally {
       setDeletingId(null);
     }
@@ -142,12 +149,12 @@ export default function PromotionPage() {
 
   const handleRestore = async (id) => {
     try {
-      await promotionService.restorePromotion(id);
-      setSuccess("Khôi phục khuyến mãi thành công");
-      await loadPromotions(page);
+      await customerService.restoreCustomer(id);
+      setSuccess("Khôi phục khách hàng thành công");
+      await loadCustomers(page);
       setTimeout(() => setSuccess(null), 2500);
     } catch (err) {
-      setError(`Lỗi khi khôi phục: ${getErrorMessage(err, "Không thể khôi phục khuyến mãi")}`);
+      setError(`Lỗi khi khôi phục: ${getErrorMessage(err, "Không thể khôi phục khách hàng")}`);
     }
   };
 
@@ -156,13 +163,13 @@ export default function PromotionPage() {
       <Container fluid>
         <div className="admin-page-heading d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
           <div className="admin-page-heading-text">
-            <h2 className="fw-bold mb-1">Quản lý khuyến mãi</h2>
+            <h2 className="fw-bold mb-1">Quản lý khách hàng</h2>
           </div>
           <Button onClick={() => handleOpenForm()} className="admin-add-btn d-flex align-items-center gap-2">
             <span className="admin-add-btn-icon d-inline-flex">
               <FaPlus size={12} />
             </span>
-            <span>Thêm khuyến mãi</span>
+            <span>Thêm khách hàng</span>
           </Button>
         </div>
 
@@ -179,9 +186,9 @@ export default function PromotionPage() {
         )}
 
         <Card className="admin-panel border-0 mb-4">
-          <Card.Body>
+          <Card.Body className="d-flex flex-column gap-3">
             <div className="row g-3">
-              <div className="col-lg-6">
+              <div className="col-lg-4">
                 <div className="position-relative">
                   <FaSearch
                     className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"
@@ -190,7 +197,7 @@ export default function PromotionPage() {
                   <Input
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Tìm kiếm theo tên khuyến mãi..."
+                    placeholder="Tìm kiếm theo họ tên, số điện thoại hoặc email..."
                     className="ps-5"
                   />
                 </div>
@@ -202,6 +209,15 @@ export default function PromotionPage() {
                   <option value="false">Tạm dừng</option>
                 </Form.Select>
               </div>
+              <div className="col-md-6 col-lg-2">
+                <Form.Select value={tierFilter} onChange={(event) => setTierFilter(event.target.value)}>
+                  <option value="all">Tất cả hạng khách hàng</option>
+                  <option value="BRONZE">Đồng</option>
+                  <option value="SILVER">Bạc</option>
+                  <option value="GOLD">Vàng</option>
+                  <option value="DIAMOND">Kim cương</option>
+                </Form.Select>
+              </div>
               <div className="col-md-6 col-lg-3">
                 <Button
                   type="button"
@@ -210,6 +226,7 @@ export default function PromotionPage() {
                   onClick={() => {
                     setSearchQuery("");
                     setActiveFilter("all");
+                    setTierFilter("all");
                   }}
                 >
                   Xóa bộ lọc
@@ -221,14 +238,14 @@ export default function PromotionPage() {
 
         <Card className="admin-panel border-0">
           <Card.Header className="bg-white border-0 pt-3 px-3 px-md-4 d-flex justify-content-between align-items-center">
-            <h6 className="mb-0 fw-semibold">Danh sách khuyến mãi</h6>
+            <h6 className="mb-0 fw-semibold">Danh sách khách hàng</h6>
             <Badge bg="light" text="dark">
-              {promotions.length} bản ghi
+              {customers.length} bản ghi
             </Badge>
           </Card.Header>
           <Card.Body className="pt-1">
-            <PromotionList
-              promotions={promotions}
+            <CustomerList
+              customers={customers}
               loading={loading}
               onEdit={handleOpenForm}
               onDelete={setDeletingId}
@@ -287,18 +304,20 @@ export default function PromotionPage() {
         </div>
       </Container>
 
-      <PromotionForm
+      <CustomerForm
         show={showForm}
         onHide={handleCloseForm}
         onSubmit={handleSubmitForm}
-        initialData={editingPromotion}
+        initialData={editingCustomer}
+        submitError={formError}
+        onClearSubmitError={() => setFormError(null)}
       />
 
       <Modal show={Boolean(deletingId)} onHide={() => setDeletingId(null)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Xác nhận xóa</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Bạn chắc chắn muốn xóa khuyến mãi này?</Modal.Body>
+        <Modal.Body>Bạn chắc chắn muốn xóa khách hàng này?</Modal.Body>
         <Modal.Footer>
           <Button variant="outline" onClick={() => setDeletingId(null)}>
             Hủy
