@@ -1,10 +1,10 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Table, Badge, Spinner, Alert, Modal } from "react-bootstrap";
 import { FaEdit, FaTrash, FaUndo } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { brandService } from "../../../core/api/brandService";
 
-export default function BrandList({ brands, loading, onEdit, onDelete, onRestore }) {
+export default function BrandList({ brands, loading, onEdit, onDelete, onRestore, page = 0, pageSize = 10 }) {
   const [previewImage, setPreviewImage] = useState("");
 
   const openPreview = (imageUrl) => {
@@ -31,7 +31,7 @@ export default function BrandList({ brands, loading, onEdit, onDelete, onRestore
       <Table hover className="align-middle mb-0 admin-brand-table">
         <thead>
           <tr>
-            <th>ID</th>
+            <th>STT</th>
             <th>Logo</th>
             <th>Tên</th>
             <th>Mô tả</th>
@@ -41,9 +41,9 @@ export default function BrandList({ brands, loading, onEdit, onDelete, onRestore
           </tr>
         </thead>
         <tbody>
-          {brands.map((brand) => (
+          {brands.map((brand, index) => (
             <tr key={brand.id}>
-              <td className="fw-semibold">#{brand.id}</td>
+              <td className="fw-semibold">{page * pageSize + index + 1}</td>
               <td>
                 {brand.logoUrl ? (
                   <div className="admin-brand-logo">
@@ -52,7 +52,7 @@ export default function BrandList({ brands, loading, onEdit, onDelete, onRestore
                       alt={brand.name}
                       style={{ height: "40px", width: "64px", objectFit: "contain" }}
                       role="button"
-                      title="Xem anh"
+                      title="Xem ảnh"
                       onClick={() => openPreview(brandService.toAbsoluteMediaUrl(brand.logoUrl))}
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
@@ -79,31 +79,16 @@ export default function BrandList({ brands, loading, onEdit, onDelete, onRestore
               <td>{brand.createdAt ? new Date(brand.createdAt).toLocaleDateString("vi-VN") : "-"}</td>
               <td>
                 <div className="d-flex justify-content-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
-                    onClick={() => onEdit(brand)}
-                    title="Sửa"
-                  >
+                  <Button variant="outline" size="icon-sm" onClick={() => onEdit(brand)} title="Sửa">
                     <FaEdit />
                   </Button>
 
                   {brand.isActive ? (
-                    <Button
-                      variant="destructive"
-                      size="icon-sm"
-                      onClick={() => onDelete(brand.id)}
-                      title="Xóa"
-                    >
+                    <Button variant="destructive" size="icon-sm" onClick={() => onDelete(brand.id)} title="Xóa">
                       <FaTrash />
                     </Button>
                   ) : (
-                    <Button
-                      variant="secondary"
-                      size="icon-sm"
-                      onClick={() => onRestore(brand.id)}
-                      title="Khôi phục"
-                    >
+                    <Button variant="secondary" size="icon-sm" onClick={() => onRestore(brand.id)} title="Khôi phục">
                       <FaUndo />
                     </Button>
                   )}
@@ -116,7 +101,7 @@ export default function BrandList({ brands, loading, onEdit, onDelete, onRestore
 
       <Modal show={Boolean(previewImage)} onHide={closePreview} centered size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Xem anh logo</Modal.Title>
+          <Modal.Title>Xem ảnh logo</Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center">
           {previewImage && (

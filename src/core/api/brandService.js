@@ -9,15 +9,21 @@ const toAbsoluteMediaUrl = (url) => {
     return '';
   }
 
-  if (/^https?:\/\//i.test(url)) {
-    return url;
+  const normalizedUrl = String(url).trim().replace(/\\/g, '/');
+
+  if (!normalizedUrl) {
+    return '';
   }
 
-  if (url.startsWith('/')) {
-    return `${API_ORIGIN}${url}`;
+  if (/^https?:\/\//i.test(normalizedUrl)) {
+    return normalizedUrl;
   }
 
-  return `${API_ORIGIN}/${url}`;
+  if (normalizedUrl.startsWith('/')) {
+    return `${API_ORIGIN}${normalizedUrl}`;
+  }
+
+  return `${API_ORIGIN}/${normalizedUrl}`;
 };
 
 const isLocalUploadUrl = (url) => {
@@ -32,6 +38,25 @@ const isLocalUploadUrl = (url) => {
   return url.startsWith(`${API_ORIGIN}/uploads/`);
 };
 
+const normalizeBrand = (brand = {}) => {
+  const logoUrl = brand.logoUrl
+    || brand.logo_url
+    || brand.logo
+    || brand.imageUrl
+    || brand.image_url
+    || '';
+
+  return {
+    ...brand,
+    logoUrl,
+  };
+};
+
+const normalizePageResponse = (data = {}) => ({
+  ...data,
+  content: Array.isArray(data.content) ? data.content.map(normalizeBrand) : [],
+});
+
 export const brandService = {
   toAbsoluteMediaUrl,
 
@@ -39,7 +64,7 @@ export const brandService = {
   getAllBrands: async (page = 0, size = 10) => {
     try {
       const response = await axios.get(API_BASE, { params: { page, size } });
-      return response.data;
+      return normalizePageResponse(response.data);
     } catch (error) {
       throw error;
     }
@@ -51,7 +76,7 @@ export const brandService = {
       const response = await axios.get(`${API_BASE}/search`, { 
         params: { name, page, size } 
       });
-      return response.data;
+      return normalizePageResponse(response.data);
     } catch (error) {
       throw error;
     }
@@ -61,7 +86,7 @@ export const brandService = {
   getActiveBrands: async (page = 0, size = 10) => {
     try {
       const response = await axios.get(`${API_BASE}/active`, { params: { page, size } });
-      return response.data;
+      return normalizePageResponse(response.data);
     } catch (error) {
       throw error;
     }

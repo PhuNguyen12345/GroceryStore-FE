@@ -1,10 +1,10 @@
-﻿import { useState, useEffect, useCallback } from "react";
-import { Container, Card, Alert, Badge, Form, Modal } from "react-bootstrap";
+﻿import { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, Badge, Card, Container, Form, Modal } from "react-bootstrap";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import AdminLayout from "../../../layouts/AdminLayout";
-import BrandList from "../components/BrandList";
-import BrandForm from "../components/BrandForm";
-import { brandService } from "../../../core/api/brandService";
+import CategoryList from "../components/CategoryList";
+import CategoryForm from "../components/CategoryForm";
+import { categoryService } from "../../../core/api/categoryService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,14 +30,17 @@ function getPageItems(total, current) {
   return pages;
 }
 
-export default function BrandPage() {
-  const [brands, setBrands] = useState([]);
+export default function CategoryPage() {
+  const [categories, setCategories] = useState([]);
+  const [categoryTree, setCategoryTree] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [editingBrand, setEditingBrand] = useState(null);
+  const [editingCategory, setEditingCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [parentFilter, setParentFilter] = useState("");
+  const [sortBy, setSortBy] = useState("name_asc");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [page, setPage] = useState(0);
@@ -47,23 +50,34 @@ export default function BrandPage() {
   const currentPage = page + 1;
   const pageItems = getPageItems(Math.max(totalPages, 1), currentPage);
 
-  const loadBrands = useCallback(async (targetPage, keyword) => {
+  const loadCategoryTree = useCallback(async () => {
+    const tree = await categoryService.getCategoryTree();
+    setCategoryTree(Array.isArray(tree) ? tree : []);
+  }, []);
+
+  const loadCategories = useCallback(async (targetPage, keyword) => {
     try {
       setLoading(true);
       setError(null);
 
       const result = keyword
-        ? await brandService.searchBrands(keyword, targetPage, 10)
-        : await brandService.getAllBrands(targetPage, 10);
+        ? await categoryService.searchCategories(keyword, targetPage, 10)
+        : parentFilter
+          ? await categoryService.getCategoriesByParent(Number(parentFilter), targetPage, 10)
+          : await categoryService.getAllCategories(targetPage, 10);
 
-      setBrands(result.content || []);
+      setCategories(result.content || []);
       setTotalPages(result.totalPages || 1);
     } catch {
-      setError("Lỗi khi tải danh sách thương hiệu");
+      setError("Lỗi khi tải danh sách danh mục");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [parentFilter]);
+
+  useEffect(() => {
+    loadCategoryTree();
+  }, [loadCategoryTree]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -74,8 +88,8 @@ export default function BrandPage() {
   }, [searchQuery]);
 
   useEffect(() => {
-    loadBrands(page, debouncedSearch);
-  }, [page, debouncedSearch, loadBrands]);
+    loadCategories(page, debouncedSearch);
+  }, [page, debouncedSearch, loadCategories]);
 
   useEffect(() => {
     setPage(0);
@@ -83,30 +97,30 @@ export default function BrandPage() {
 
   useEffect(() => {
     setPage(0);
-  }, [statusFilter]);
+  }, [statusFilter, sortBy, parentFilter]);
 
-  const handleOpenForm = (brand = null) => {
-    setEditingBrand(brand);
+  const handleOpenForm = (category = null) => {
+    setEditingCategory(category);
     setShowForm(true);
   };
 
   const handleCloseForm = () => {
     setShowForm(false);
-    setEditingBrand(null);
+    setEditingCategory(null);
   };
 
-  const handleSubmitForm = async (formData) => {
+  const handleSubmitForm = async (payload) => {
     try {
-      if (editingBrand) {
-        await brandService.updateBrand(editingBrand.id, formData);
-        setSuccess("Cập nhật thương hiệu thành công");
+      if (editingCategory) {
+        await categoryService.updateCategory(editingCategory.id, payload);
+        setSuccess("Cập nhật danh mục thành công");
       } else {
-        await brandService.createBrand(formData);
-        setSuccess("Tạo thương hiệu thành công");
+        await categoryService.createCategory(payload);
+        setSuccess("Tạo danh mục thành công");
       }
 
       setPage(0);
-      await loadBrands(0, debouncedSearch);
+      await Promise.all([loadCategories(0, debouncedSearch), loadCategoryTree()]);
       handleCloseForm();
       setTimeout(() => setSuccess(null), 2500);
     } catch (err) {
@@ -114,19 +128,16 @@ export default function BrandPage() {
     }
   };
 
-  const handleDelete = (id) => {
-    setDeletingId(id);
-  };
-
   const handleConfirmDelete = async () => {
     if (!deletingId) return;
+
     try {
-      await brandService.deleteBrand(deletingId);
-      setSuccess("Xóa thương hiệu thành công");
-      await loadBrands(page, debouncedSearch);
+      await categoryService.deleteCategory(deletingId);
+      setSuccess("Xóa danh mục thành công");
+      await Promise.all([loadCategories(page, debouncedSearch), loadCategoryTree()]);
       setTimeout(() => setSuccess(null), 2500);
     } catch (err) {
-      setError(`Lỗi khi xóa: ${err.message}`);
+      setError(`Lỗi khi xóa: ${err.response?.data?.message || err.message}`);
     } finally {
       setDeletingId(null);
     }
@@ -134,34 +145,57 @@ export default function BrandPage() {
 
   const handleRestore = async (id) => {
     try {
-      await brandService.restoreBrand(id);
-      setSuccess("Khôi phục thương hiệu thành công");
-      await loadBrands(page, debouncedSearch);
+      await categoryService.restoreCategory(id);
+      setSuccess("Khôi phục danh mục thành công");
+      await Promise.all([loadCategories(page, debouncedSearch), loadCategoryTree()]);
       setTimeout(() => setSuccess(null), 2500);
     } catch (err) {
-      setError(`Lỗi khi khôi phục: ${err.message}`);
+      setError(`Lỗi khi khôi phục: ${err.response?.data?.message || err.message}`);
     }
   };
 
-  const filteredBrands = (brands || []).filter((item) => {
-    if (statusFilter === "active") return item.isActive;
-    if (statusFilter === "inactive") return !item.isActive;
-    return true;
-  });
+  const displayCategories = useMemo(() => {
+    let result = [...categories].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+
+    if (statusFilter === "active") {
+      result = result.filter((item) => item.isActive);
+    } else if (statusFilter === "inactive") {
+      result = result.filter((item) => !item.isActive);
+    }
+
+    switch (sortBy) {
+      case "name_desc":
+        result.sort((a, b) => (b.name || "").localeCompare(a.name || "", "vi"));
+        break;
+      case "name_asc":
+        result.sort((a, b) => (a.name || "").localeCompare(b.name || "", "vi"));
+        break;
+      case "id_desc":
+        result.sort((a, b) => (b.id ?? 0) - (a.id ?? 0));
+        break;
+      case "id_asc":
+      default:
+        result.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+    }
+
+    return result;
+  }, [categories, statusFilter, sortBy]);
+
+  const recordCount = useMemo(() => displayCategories.length, [displayCategories]);
 
   return (
     <AdminLayout>
       <Container fluid>
         <div className="admin-page-heading d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
           <div className="admin-page-heading-text">
-            <h2 className="fw-bold mb-1">Quản lý thương hiệu</h2>
-            <p className="text-muted mb-0">Theo dõi, cập nhật và quản trị thương hiệu sản phẩm.</p>
+            <h2 className="fw-bold mb-1">Quản lý danh mục</h2>
+            <p className="text-muted mb-0">Theo dõi, cập nhật và tổ chức danh mục sản phẩm.</p>
           </div>
           <Button onClick={() => handleOpenForm()} className="admin-add-btn d-flex align-items-center gap-2">
             <span className="admin-add-btn-icon d-inline-flex">
               <FaPlus size={12} />
             </span>
-            <span>Thêm thương hiệu</span>
+            <span>Thêm danh mục</span>
           </Button>
         </div>
 
@@ -185,32 +219,54 @@ export default function BrandPage() {
                 <Input
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Tìm kiếm tên thương hiệu..."
+                  placeholder="Tìm kiếm tên danh mục..."
                   className="ps-5"
                 />
               </div>
-              <Form.Select style={{ maxWidth: 220 }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+
+              <Form.Select style={{ maxWidth: 220 }} value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
                 <option value="all">Tất cả trạng thái</option>
-                <option value="active">Kích hoạt</option>
+                <option value="active">Đang kích hoạt</option>
                 <option value="inactive">Tạm dừng</option>
               </Form.Select>
+
+              <Form.Select
+                style={{ maxWidth: 240 }}
+                value={parentFilter}
+                onChange={(event) => setParentFilter(event.target.value)}
+              >
+                <option value="">Tất cả danh mục cha</option>
+                {categoryTree.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </Form.Select>
+
+              <Form.Select style={{ maxWidth: 220 }} value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+                <option value="name_asc">Tên A-Z</option>
+                <option value="name_desc">Tên Z-A</option>
+                <option value="id_asc">STT tăng dần</option>
+                <option value="id_desc">STT giảm dần</option>
+              </Form.Select>
+
             </div>
           </Card.Body>
         </Card>
 
         <Card className="admin-panel border-0">
           <Card.Header className="bg-white border-0 pt-3 px-3 px-md-4 d-flex justify-content-between align-items-center">
-            <h6 className="mb-0 fw-semibold">Danh sách thương hiệu</h6>
+            <h6 className="mb-0 fw-semibold">Danh sách danh mục</h6>
             <Badge bg="light" text="dark">
-              {filteredBrands.length} bản ghi
+              {recordCount} bản ghi
             </Badge>
           </Card.Header>
           <Card.Body className="pt-1">
-            <BrandList
-              brands={filteredBrands}
+            <CategoryList
+              categories={displayCategories}
               loading={loading}
               onEdit={handleOpenForm}
-              onDelete={handleDelete}
+              onDelete={setDeletingId}
               onRestore={handleRestore}
               page={page}
               pageSize={10}
@@ -266,18 +322,19 @@ export default function BrandPage() {
         </div>
       </Container>
 
-      <BrandForm
+      <CategoryForm
         show={showForm}
         onHide={handleCloseForm}
         onSubmit={handleSubmitForm}
-        initialData={editingBrand}
+        initialData={editingCategory}
+        categoryTree={categoryTree}
       />
 
       <Modal show={Boolean(deletingId)} onHide={() => setDeletingId(null)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Xác nhận xóa</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Bạn chắc chắn muốn xóa thương hiệu này?</Modal.Body>
+        <Modal.Body>Bạn chắc chắn muốn xóa danh mục này?</Modal.Body>
         <Modal.Footer>
           <Button variant="outline" onClick={() => setDeletingId(null)}>
             Hủy
