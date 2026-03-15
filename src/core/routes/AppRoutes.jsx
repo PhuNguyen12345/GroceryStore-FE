@@ -13,6 +13,9 @@ import ShippingPolicyPage from "../../modules/dashboard/pages/ShippingPolicyPage
 import BlogPage from "../../modules/dashboard/pages/BlogPage";
 import BlogDetailPage from "../../modules/dashboard/pages/BlogDetailPage";
 import HotDealPage from "../../modules/dashboard/pages/HotDealPage";
+import PromotionPage from "@/modules/crm-promotion/pages/Promotion";
+import CustomerPage from "@/modules/crm-promotion/pages/Customer";
+import VoucherPage from "@/modules/crm-promotion/pages/Voucher";
 
 export default function AppRoutes() {
   return (
@@ -35,7 +38,10 @@ export default function AppRoutes() {
       <Route path="/admin/product-units" element={<ProductUnitsPage />} />
       <Route path="/admin/brands" element={<BrandPage />} />
       <Route path="/admin/categories" element={<CategoryPage />} />
+
+      <Route path="/admin/customers" element={<CustomerPage />} />
+      <Route path="/admin/promotions" element={<PromotionPage />} />
+      <Route path="/admin/vouchers" element={<VoucherPage />} />
     </Routes>
   );
 }
-
