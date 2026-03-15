@@ -5,6 +5,10 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import CustomerPage from '../../modules/crm-promotion/pages/Customer';
 import PromotionPage from '../../modules/crm-promotion/pages/Promotion';
 import VoucherPage from '../../modules/crm-promotion/pages/Voucher';
+import ProductUnitsPage from '@/modules/product/pages/ProductUnits';
+import ProductsPage from '@/modules/product/pages/Products';
+import CategoryPage from '@/modules/product/pages/Category';
+import POSPage from '@/modules/pos/pages/POSPage';
 
 export default function AppRoutes() {
   return (
@@ -19,6 +23,7 @@ export default function AppRoutes() {
        <Route path="/admin/customers" element={<CustomerPage />} />
       <Route path="/admin/promotions" element={<PromotionPage />} />
       <Route path="/admin/vouchers" element={<VoucherPage />} />
+      <Route path="/orders" element={<POSPage />}/>
     </Routes>
   );
 }

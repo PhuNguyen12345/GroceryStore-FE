@@ -11,6 +11,7 @@ export default function DashboardLayout({ children }) {
         <div className="container mb-4">
           <HeroBanner />
         </div>
+        
         {children}
       </main>
 
