@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Container, Card, Alert, Badge, Modal, Form } from "react-bootstrap";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import AdminLayout from "../../../layouts/AdminLayout";
-import PromotionList from "../components/PromotionList";
-import PromotionForm from "../components/PromotionForm";
-import { promotionService } from "../../../core/api/promotionService";
+import VoucherList from "../components/VoucherList";
+import VoucherForm from "../components/VoucherForm";
+import { voucherService } from "../../../core/api/voucherService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/pagination";
 
 const PAGE_SIZE = 10;
+const FETCH_SIZE = 1000;
 
 function getPageItems(total, current) {
   if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
@@ -50,78 +51,93 @@ function getErrorMessage(err, fallback) {
   return fallback || err?.message || "Đã có lỗi xảy ra";
 }
 
-export default function PromotionPage() {
-  const [promotions, setPromotions] = useState([]);
+function matchesVoucher(voucher, keyword, activeFilter, discountTypeFilter) {
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  const code = voucher.code?.toLowerCase() || "";
+  const description = voucher.description?.toLowerCase() || "";
+
+  const matchesSearch =
+    !normalizedKeyword ||
+    code.includes(normalizedKeyword) ||
+    description.includes(normalizedKeyword);
+
+  const matchesActive =
+    activeFilter === "all" || String(Boolean(voucher.isActive)) === activeFilter;
+
+  const matchesDiscountType =
+    discountTypeFilter === "all" || voucher.discountType === discountTypeFilter;
+
+  return matchesSearch && matchesActive && matchesDiscountType;
+}
+
+export default function VoucherPage() {
+  const [allVouchers, setAllVouchers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [editingPromotion, setEditingPromotion] = useState(null);
+  const [editingVoucher, setEditingVoucher] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [discountTypeFilter, setDiscountTypeFilter] = useState("all");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
   const [deletingId, setDeletingId] = useState(null);
 
-  const keyword = searchQuery.trim();
-  const currentPage = page + 1;
-  const pageItems = getPageItems(Math.max(totalPages, 1), currentPage);
+  const filteredVouchers = allVouchers.filter((voucher) =>
+    matchesVoucher(voucher, searchQuery, activeFilter, discountTypeFilter)
+  );
+  const totalPages = Math.max(1, Math.ceil(filteredVouchers.length / PAGE_SIZE));
+  const currentPage = Math.min(page + 1, totalPages);
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const vouchers = filteredVouchers.slice(startIndex, startIndex + PAGE_SIZE);
+  const pageItems = getPageItems(totalPages, currentPage);
 
-  const loadPromotions = async (targetPage = page) => {
+  const loadVouchers = async () => {
     try {
       setLoading(true);
       setError(null);
-
-      let result;
-
-      if (keyword) {
-        result = await promotionService.searchByName(keyword, targetPage, PAGE_SIZE);
-      } else if (activeFilter !== "all") {
-        result = await promotionService.filterByActive(activeFilter === "true", targetPage, PAGE_SIZE);
-      } else {
-        result = await promotionService.getAllPromotions(targetPage, PAGE_SIZE);
-      }
-
-      setPromotions(result.content || []);
-      setTotalPages(result.totalPages || 1);
+      const result = await voucherService.getAllVouchers(0, FETCH_SIZE);
+      setAllVouchers(result.content || []);
     } catch (err) {
-      setError(getErrorMessage(err, "Không thể tải danh sách khuyến mãi"));
+      setError(getErrorMessage(err, "Không thể tải danh sách voucher"));
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      loadPromotions(page);
-    }, keyword ? 350 : 0);
-
-    return () => clearTimeout(timer);
-  }, [page, keyword, activeFilter]);
+    loadVouchers();
+  }, []);
 
   useEffect(() => {
     setPage(0);
-  }, [searchQuery, activeFilter]);
+  }, [searchQuery, activeFilter, discountTypeFilter]);
 
-  const handleOpenForm = (promotion = null) => {
-    setEditingPromotion(promotion);
+  useEffect(() => {
+    if (page > totalPages - 1) {
+      setPage(Math.max(0, totalPages - 1));
+    }
+  }, [page, totalPages]);
+
+  const handleOpenForm = (voucher = null) => {
+    setEditingVoucher(voucher);
     setShowForm(true);
   };
 
   const handleCloseForm = () => {
     setShowForm(false);
-    setEditingPromotion(null);
+    setEditingVoucher(null);
   };
 
   const handleSubmitForm = async (formData) => {
     try {
-      await promotionService.savePromotion(formData);
-      setSuccess(editingPromotion ? "Cập nhật khuyến mãi thành công" : "Thêm khuyến mãi thành công");
-      await loadPromotions(page);
+      await voucherService.saveVoucher(formData);
+      setSuccess(editingVoucher ? "Cập nhật voucher thành công" : "Tạo voucher thành công");
+      await loadVouchers();
       handleCloseForm();
       setTimeout(() => setSuccess(null), 2500);
     } catch (err) {
-      setError(`Lỗi: ${getErrorMessage(err, "Không thể lưu khuyến mãi")}`);
+      setError(`Lỗi: ${getErrorMessage(err, "Không thể lưu voucher")}`);
     }
   };
 
@@ -129,12 +145,12 @@ export default function PromotionPage() {
     if (!deletingId) return;
 
     try {
-      await promotionService.deletePromotion(deletingId);
-      setSuccess("Xóa khuyến mãi thành công");
-      await loadPromotions(page);
+      await voucherService.deleteVoucher(deletingId);
+      setSuccess("Xóa voucher thành công");
+      await loadVouchers();
       setTimeout(() => setSuccess(null), 2500);
     } catch (err) {
-      setError(`Lỗi khi xóa: ${getErrorMessage(err, "Không thể xóa khuyến mãi")}`);
+      setError(`Lỗi khi xóa: ${getErrorMessage(err, "Không thể xóa voucher")}`);
     } finally {
       setDeletingId(null);
     }
@@ -142,12 +158,12 @@ export default function PromotionPage() {
 
   const handleRestore = async (id) => {
     try {
-      await promotionService.restorePromotion(id);
-      setSuccess("Khôi phục khuyến mãi thành công");
-      await loadPromotions(page);
+      await voucherService.restoreVoucher(id);
+      setSuccess("Khôi phục voucher thành công");
+      await loadVouchers();
       setTimeout(() => setSuccess(null), 2500);
     } catch (err) {
-      setError(`Lỗi khi khôi phục: ${getErrorMessage(err, "Không thể khôi phục khuyến mãi")}`);
+      setError(`Lỗi khi khôi phục: ${getErrorMessage(err, "Không thể khôi phục voucher")}`);
     }
   };
 
@@ -156,13 +172,13 @@ export default function PromotionPage() {
       <Container fluid>
         <div className="admin-page-heading d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
           <div className="admin-page-heading-text">
-            <h2 className="fw-bold mb-1">Quản lý khuyến mãi</h2>
+            <h2 className="fw-bold mb-1">Quản lý voucher</h2>
           </div>
           <Button onClick={() => handleOpenForm()} className="admin-add-btn d-flex align-items-center gap-2">
             <span className="admin-add-btn-icon d-inline-flex">
               <FaPlus size={12} />
             </span>
-            <span>Thêm khuyến mãi</span>
+            <span>Thêm voucher</span>
           </Button>
         </div>
 
@@ -181,7 +197,7 @@ export default function PromotionPage() {
         <Card className="admin-panel border-0 mb-4">
           <Card.Body>
             <div className="row g-3">
-              <div className="col-lg-6">
+              <div className="col-lg-4">
                 <div className="position-relative">
                   <FaSearch
                     className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"
@@ -190,7 +206,7 @@ export default function PromotionPage() {
                   <Input
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Tìm kiếm theo tên khuyến mãi..."
+                    placeholder="Tìm kiếm theo mã hoặc mô tả voucher..."
                     className="ps-5"
                   />
                 </div>
@@ -202,6 +218,16 @@ export default function PromotionPage() {
                   <option value="false">Tạm dừng</option>
                 </Form.Select>
               </div>
+              <div className="col-md-6 col-lg-2">
+                <Form.Select
+                  value={discountTypeFilter}
+                  onChange={(event) => setDiscountTypeFilter(event.target.value)}
+                >
+                  <option value="all">Tất cả loại giảm</option>
+                  <option value="FIXED_AMOUNT">Giảm số tiền cố định</option>
+                  <option value="PERCENTAGE">Giảm theo phần trăm</option>
+                </Form.Select>
+              </div>
               <div className="col-md-6 col-lg-3">
                 <Button
                   type="button"
@@ -210,6 +236,7 @@ export default function PromotionPage() {
                   onClick={() => {
                     setSearchQuery("");
                     setActiveFilter("all");
+                    setDiscountTypeFilter("all");
                   }}
                 >
                   Xóa bộ lọc
@@ -221,19 +248,19 @@ export default function PromotionPage() {
 
         <Card className="admin-panel border-0">
           <Card.Header className="bg-white border-0 pt-3 px-3 px-md-4 d-flex justify-content-between align-items-center">
-            <h6 className="mb-0 fw-semibold">Danh sách khuyến mãi</h6>
+            <h6 className="mb-0 fw-semibold">Danh sách voucher</h6>
             <Badge bg="light" text="dark">
-              {promotions.length} bản ghi
+              {filteredVouchers.length} bản ghi
             </Badge>
           </Card.Header>
           <Card.Body className="pt-1">
-            <PromotionList
-              promotions={promotions}
+            <VoucherList
+              vouchers={vouchers}
               loading={loading}
               onEdit={handleOpenForm}
               onDelete={setDeletingId}
               onRestore={handleRestore}
-              page={page}
+              page={currentPage - 1}
               size={PAGE_SIZE}
             />
           </Card.Body>
@@ -247,9 +274,9 @@ export default function PromotionPage() {
                   href="#"
                   onClick={(event) => {
                     event.preventDefault();
-                    if (page > 0) setPage((prev) => prev - 1);
+                    if (currentPage > 1) setPage((prev) => prev - 1);
                   }}
-                  className={page === 0 ? "pointer-events-none opacity-50" : ""}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
 
@@ -277,9 +304,9 @@ export default function PromotionPage() {
                   href="#"
                   onClick={(event) => {
                     event.preventDefault();
-                    if (page < totalPages - 1) setPage((prev) => prev + 1);
+                    if (currentPage < totalPages) setPage((prev) => prev + 1);
                   }}
-                  className={page >= totalPages - 1 || totalPages === 0 ? "pointer-events-none opacity-50" : ""}
+                  className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
             </PaginationContent>
@@ -287,18 +314,18 @@ export default function PromotionPage() {
         </div>
       </Container>
 
-      <PromotionForm
+      <VoucherForm
         show={showForm}
         onHide={handleCloseForm}
         onSubmit={handleSubmitForm}
-        initialData={editingPromotion}
+        initialData={editingVoucher}
       />
 
       <Modal show={Boolean(deletingId)} onHide={() => setDeletingId(null)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Xác nhận xóa</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Bạn chắc chắn muốn xóa khuyến mãi này?</Modal.Body>
+        <Modal.Body>Bạn chắc chắn muốn xóa voucher này?</Modal.Body>
         <Modal.Footer>
           <Button variant="outline" onClick={() => setDeletingId(null)}>
             Hủy

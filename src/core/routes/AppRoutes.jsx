@@ -1,10 +1,10 @@
-﻿import { Routes, Route } from "react-router-dom";
-import AdminDashboard from "../../modules/dashboard/pages/AdminDashboard";
-import BrandPage from "../../modules/product/pages/Brand";
-import CategoryPage from "../../modules/product/pages/Category";
-import ProductsPage from "../../modules/product/pages/Products";
-import ProductUnitsPage from "../../modules/product/pages/ProductUnits";
-import DashboardLayout from "../../layouts/DashboardLayout";
+import { Routes, Route } from 'react-router-dom';
+import AdminDashboard from '../../modules/dashboard/pages/AdminDashboard';
+import BrandPage from '../../modules/product/pages/Brand';
+import DashboardLayout from '../../layouts/DashboardLayout';
+import CustomerPage from '../../modules/crm-promotion/pages/Customer';
+import PromotionPage from '../../modules/crm-promotion/pages/Promotion';
+import VoucherPage from '../../modules/crm-promotion/pages/Voucher';
 
 export default function AppRoutes() {
   return (
@@ -14,8 +14,11 @@ export default function AppRoutes() {
       <Route path="/admin/products" element={<ProductsPage />} />
       <Route path="/admin/product-units" element={<ProductUnitsPage />} />
       <Route path="/admin/brands" element={<BrandPage />} />
-      <Route path="/admin/categories" element={<CategoryPage />} />
       {/* Add more routes here */}
+      <Route path="/admin/categories" element={<CategoryPage />} />
+       <Route path="/admin/customers" element={<CustomerPage />} />
+      <Route path="/admin/promotions" element={<PromotionPage />} />
+      <Route path="/admin/vouchers" element={<VoucherPage />} />
     </Routes>
   );
 }
