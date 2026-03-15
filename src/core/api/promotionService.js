@@ -15,6 +15,17 @@ export const promotionService = {
     }
   },
 
+  getActivePromotions: async (page = 0, size = 10) => {
+    try {
+      const response = await axios.get(`${PROMOTION_API_BASE}/filter/active`, {
+        params: { isActive: true, page, size },
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   uploadBannerImage: async (file) => {
     try {
       const formData = new FormData();
