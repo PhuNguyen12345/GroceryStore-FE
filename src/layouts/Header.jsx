@@ -96,7 +96,7 @@ export default function Header() {
             <Col lg={3} md={4} sm={12}>
               <Link to="/" className="text-decoration-none text-white">
                 <div className="fw-bold fs-3 lh-1">GroceryStore</div>
-                <small className="text-white-50">Thực phẩm tươi mỗi ngày</small>
+                <small className="text-white-50">Cửa hàng cho mọi nhà</small>
               </Link>
             </Col>
 
