@@ -1,25 +1,16 @@
 import AdminHeader from "./AdminHeader";
 import Sidebar from "./AdminSidebar";
 import AdminFooter from "./AdminFooter";
-import { Outlet } from "react-router-dom";
+import "../styles/admin.css";
 
-export default function AdminLayout() {
+export default function AdminLayout({children}) {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", flexDirection: "column" }}>
+    <div className="admin-shell">
       <Sidebar />
-      <div
-        style={{
-          marginLeft: "250px",
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          backgroundColor: "#f8f9fa",
-        }}
-      >
+
+      <div className="admin-main">
         <AdminHeader />
-        <main style={{ flex: 1, padding: "20px", overflowY: "auto" }}>
-          <Outlet />
-        </main>
+        <main className="admin-content">{children}</main>
         <AdminFooter />
       </div>
     </div>
