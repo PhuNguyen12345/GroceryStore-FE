@@ -16,10 +16,15 @@ import HotDealPage from "../../modules/dashboard/pages/HotDealPage";
 import PromotionPage from "@/modules/crm-promotion/pages/Promotion";
 import CustomerPage from "@/modules/crm-promotion/pages/Customer";
 import VoucherPage from "@/modules/crm-promotion/pages/Voucher";
+import LoginPage from "@/modules/auth/pages/LoginPage";
+import PrivateRoutes from "@/core/routes/PrivateRoutes";
+import { ALLOWED_STAFF_ROLES } from "@/core/store/useAuthStore";
 
 export default function AppRoutes() {
   return (
     <Routes>
+      <Route path="/login" element={<LoginPage />} />
+
       <Route path="/" element={<DashboardLayout />} />
       <Route path="/products" element={<StoreProductsPage />} />
       <Route path="/products/:productId" element={<StoreProductDetailPage />} />
@@ -33,15 +38,17 @@ export default function AppRoutes() {
       <Route path="/blog/:slug" element={<BlogDetailPage />} />
       <Route path="/hot-deal" element={<HotDealPage />} />
 
-      <Route path="/admin" element={<AdminDashboard />} />
-      <Route path="/admin/products" element={<ProductsPage />} />
-      <Route path="/admin/product-units" element={<ProductUnitsPage />} />
-      <Route path="/admin/brands" element={<BrandPage />} />
-      <Route path="/admin/categories" element={<CategoryPage />} />
+      <Route element={<PrivateRoutes allowedRoles={ALLOWED_STAFF_ROLES} />}>
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/products" element={<ProductsPage />} />
+        <Route path="/admin/product-units" element={<ProductUnitsPage />} />
+        <Route path="/admin/brands" element={<BrandPage />} />
+        <Route path="/admin/categories" element={<CategoryPage />} />
 
-      <Route path="/admin/customers" element={<CustomerPage />} />
-      <Route path="/admin/promotions" element={<PromotionPage />} />
-      <Route path="/admin/vouchers" element={<VoucherPage />} />
+        <Route path="/admin/customers" element={<CustomerPage />} />
+        <Route path="/admin/promotions" element={<PromotionPage />} />
+        <Route path="/admin/vouchers" element={<VoucherPage />} />
+      </Route>
     </Routes>
   );
 }
