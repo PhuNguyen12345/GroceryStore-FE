@@ -41,7 +41,7 @@ function flattenCategoryTree(nodes, acc = []) {
 }
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
   const [categoryTree, setCategoryTree] = useState([]);
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -55,12 +55,34 @@ export default function ProductsPage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
   const [deletingId, setDeletingId] = useState(null);
-  const [canUseServerFilter, setCanUseServerFilter] = useState(true);
+  const PAGE_SIZE = 10;
 
-  const currentPage = page + 1;
-  const pageItems = getPageItems(Math.max(totalPages, 1), currentPage);
+  const loadProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const pageSize = 100;
+      let currentPage = 0;
+      let totalPageCount = 1;
+      const merged = [];
+
+      while (currentPage < totalPageCount) {
+        const result = await productService.getAllProducts(currentPage, pageSize);
+        const content = Array.isArray(result?.content) ? result.content : [];
+        merged.push(...content);
+        totalPageCount = Number.isFinite(result?.totalPages) ? result.totalPages : currentPage + 1;
+        currentPage += 1;
+      }
+
+      setAllProducts(merged);
+    } catch (err) {
+      setError(`Lỗi khi tải danh sách sản phẩm: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const loadLookups = useCallback(async () => {
     const [categoryTreeResult, brandResult] = await Promise.all([
@@ -71,64 +93,6 @@ export default function ProductsPage() {
     setCategoryTree(Array.isArray(categoryTreeResult) ? categoryTreeResult : []);
     setBrands(brandResult.content || []);
   }, []);
-
-  const loadProducts = useCallback(async (targetPage, keyword, filters = {}) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const statusToApi = filters.statusFilter === "active"
-        ? true
-        : filters.statusFilter === "inactive"
-          ? false
-          : "";
-
-      const loadLegacy = async () => {
-        if (filters.categoryId) {
-          return productService.getProductsByCategory(Number(filters.categoryId), targetPage, 10);
-        }
-        if (filters.brandId) {
-          return productService.getProductsByBrand(Number(filters.brandId), targetPage, 10);
-        }
-        if (keyword) {
-          return productService.searchProducts(keyword, targetPage, 10);
-        }
-        return productService.getAllProducts(targetPage, 10);
-      };
-
-      let result;
-      if (canUseServerFilter) {
-        try {
-          result = await productService.filterProducts(
-            {
-              name: keyword,
-              categoryId: filters.categoryId,
-              brandId: filters.brandId,
-              isActive: statusToApi,
-            },
-            targetPage,
-            10
-          );
-        } catch (err) {
-          if (err?.response?.status === 404 || err?.response?.status === 403) {
-            setCanUseServerFilter(false);
-            result = await loadLegacy();
-          } else {
-            throw err;
-          }
-        }
-      } else {
-        result = await loadLegacy();
-      }
-
-      setProducts(result.content || []);
-      setTotalPages(result.totalPages || 1);
-    } catch (err) {
-      setError(`Lỗi khi tải danh sách sản phẩm: ${err.response?.data?.message || err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  }, [canUseServerFilter]);
 
   useEffect(() => {
     loadLookups();
@@ -143,12 +107,8 @@ export default function ProductsPage() {
   }, [searchQuery]);
 
   useEffect(() => {
-    loadProducts(page, debouncedSearch, {
-      statusFilter,
-      categoryId: categoryFilter,
-      brandId: brandFilter,
-    });
-  }, [page, debouncedSearch, statusFilter, categoryFilter, brandFilter, loadProducts]);
+    loadProducts();
+  }, [loadProducts]);
 
   useEffect(() => {
     setPage(0);
@@ -179,11 +139,7 @@ export default function ProductsPage() {
       }
 
       setPage(0);
-      await loadProducts(0, debouncedSearch, {
-        statusFilter,
-        categoryId: categoryFilter,
-        brandId: brandFilter,
-      });
+      await loadProducts();
       handleCloseForm();
       setTimeout(() => setSuccess(null), 2500);
     } catch (err) {
@@ -197,11 +153,7 @@ export default function ProductsPage() {
     try {
       await productService.deleteProduct(deletingId);
       setSuccess("Xóa sản phẩm thành công");
-      await loadProducts(page, debouncedSearch, {
-        statusFilter,
-        categoryId: categoryFilter,
-        brandId: brandFilter,
-      });
+      await loadProducts();
       setTimeout(() => setSuccess(null), 2500);
     } catch (err) {
       setError(`Lỗi khi xóa: ${err.response?.data?.message || err.message}`);
@@ -214,11 +166,7 @@ export default function ProductsPage() {
     try {
       await productService.restoreProduct(id);
       setSuccess("Khôi phục sản phẩm thành công");
-      await loadProducts(page, debouncedSearch, {
-        statusFilter,
-        categoryId: categoryFilter,
-        brandId: brandFilter,
-      });
+      await loadProducts();
       setTimeout(() => setSuccess(null), 2500);
     } catch (err) {
       setError(`Lỗi khi khôi phục: ${err.response?.data?.message || err.message}`);
@@ -228,7 +176,7 @@ export default function ProductsPage() {
   const categoryOptions = useMemo(() => flattenCategoryTree(categoryTree || []), [categoryTree]);
 
   const filteredProducts = useMemo(() => {
-    return (products || []).filter((item) => {
+    return (allProducts || []).filter((item) => {
       if (statusFilter === "active" && !item.isActive) return false;
       if (statusFilter === "inactive" && item.isActive) return false;
       if (categoryFilter && String(item.categoryId) !== String(categoryFilter)) return false;
@@ -238,7 +186,22 @@ export default function ProductsPage() {
       }
       return true;
     });
-  }, [products, statusFilter, categoryFilter, brandFilter, debouncedSearch]);
+  }, [allProducts, statusFilter, categoryFilter, brandFilter, debouncedSearch]);
+
+  const totalPages = Math.max(Math.ceil(filteredProducts.length / PAGE_SIZE), 1);
+  const currentPage = page + 1;
+  const pageItems = getPageItems(totalPages, currentPage);
+
+  useEffect(() => {
+    if (page >= totalPages) {
+      setPage(Math.max(totalPages - 1, 0));
+    }
+  }, [page, totalPages]);
+
+  const pagedProducts = useMemo(() => {
+    const start = page * PAGE_SIZE;
+    return filteredProducts.slice(start, start + PAGE_SIZE);
+  }, [filteredProducts, page, PAGE_SIZE]);
 
   return (
     <AdminLayout>
@@ -317,13 +280,13 @@ export default function ProductsPage() {
           </Card.Header>
           <Card.Body className="pt-1">
             <ProductCard
-              products={filteredProducts}
+              products={pagedProducts}
               loading={loading}
               onEdit={handleOpenForm}
               onDelete={setDeletingId}
               onRestore={handleRestore}
               page={page}
-              pageSize={10}
+              pageSize={PAGE_SIZE}
             />
           </Card.Body>
         </Card>

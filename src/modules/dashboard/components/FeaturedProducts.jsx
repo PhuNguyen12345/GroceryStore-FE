@@ -76,7 +76,12 @@ export default function FeaturedProducts() {
   return (
     <section className="featured-products mt-4">
       <div className="featured-products-head">
-        <h4>Sản phẩm nổi bật</h4>
+        <div className="featured-products-head-row">
+          <h4>Sản phẩm nổi bật</h4>
+          <Link to="/products" className="blog-highlights-more">
+            Xem thêm
+          </Link>
+        </div>
         <p>Một số sản phẩm được quan tâm nhiều tại cửa hàng.</p>
       </div>
 

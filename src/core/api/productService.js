@@ -32,19 +32,6 @@ export const productService = {
     return response.data;
   },
 
-  filterProducts: async ({ name = "", categoryId = "", brandId = "", isActive = "" } = {}, page = 0, size = 10) => {
-    const params = { page, size };
-    const trimmedName = String(name || "").trim();
-
-    if (trimmedName) params.name = trimmedName;
-    if (categoryId !== "" && categoryId != null) params.categoryId = Number(categoryId);
-    if (brandId !== "" && brandId != null) params.brandId = Number(brandId);
-    if (isActive !== "" && isActive != null) params.isActive = isActive;
-
-    const response = await axios.get(`${API_BASE}/filter`, { params });
-    return response.data;
-  },
-
   getProductsByCategory: async (categoryId, page = 0, size = 10) => {
     const response = await axios.get(`${API_BASE}/category/${categoryId}`, {
       params: { page, size },
