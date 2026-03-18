@@ -94,11 +94,15 @@ export default function StoreProductsPage() {
   const [searchParams] = useSearchParams();
   const categoryIdParam = searchParams.get("categoryId");
   const categoryNameParam = searchParams.get("categoryName");
+  const brandIdParam = searchParams.get("brandId");
+  const brandNameParam = searchParams.get("brandName");
   const keywordParam = (searchParams.get("keyword") || "").trim();
   const categoryId = categoryIdParam ? Number(categoryIdParam) : null;
+  const brandId = brandIdParam ? Number(brandIdParam) : null;
   const hasCategoryFilter = Number.isFinite(categoryId) && categoryId > 0;
+  const hasBrandFilter = Number.isFinite(brandId) && brandId > 0;
   const hasKeywordFilter = keywordParam.length > 0;
-  const hasLocalFilter = hasCategoryFilter || hasKeywordFilter;
+  const hasLocalFilter = hasCategoryFilter || hasBrandFilter || hasKeywordFilter;
 
   const [products, setProducts] = useState([]);
   const [allFilteredProducts, setAllFilteredProducts] = useState([]);
@@ -110,7 +114,7 @@ export default function StoreProductsPage() {
 
   useEffect(() => {
     setPage(0);
-  }, [categoryIdParam, keywordParam]);
+  }, [categoryIdParam, brandIdParam, keywordParam]);
 
   useEffect(() => {
     const loadFilteredProducts = async () => {
@@ -134,10 +138,11 @@ export default function StoreProductsPage() {
         const normalizedKeyword = keywordParam.toLowerCase();
         const filtered = allProducts.filter((item) => {
           const inCategory = !categoryIdSet || categoryIdSet.has(item.categoryId);
+          const inBrand = !hasBrandFilter || Number(item?.brandId) === brandId;
           const name = String(item?.name || "").toLowerCase();
           const description = String(item?.description || "").toLowerCase();
           const inKeyword = !hasKeywordFilter || name.includes(normalizedKeyword) || description.includes(normalizedKeyword);
-          return inCategory && inKeyword;
+          return inCategory && inBrand && inKeyword;
         });
 
         setAllFilteredProducts(filtered);
@@ -150,7 +155,7 @@ export default function StoreProductsPage() {
     };
 
     loadFilteredProducts();
-  }, [hasLocalFilter, hasCategoryFilter, hasKeywordFilter, categoryId, keywordParam]);
+  }, [hasLocalFilter, hasCategoryFilter, hasBrandFilter, hasKeywordFilter, categoryId, brandId, keywordParam]);
 
   useEffect(() => {
     const loadProductsByPage = async () => {
@@ -219,6 +224,8 @@ export default function StoreProductsPage() {
                   ? `Kết quả tìm kiếm: "${keywordParam}"`
                   : categoryNameParam
                     ? `Hàng hóa: ${categoryNameParam}`
+                    : brandNameParam
+                      ? `Nhãn hàng: ${brandNameParam}`
                     : "Hàng hóa của cửa hàng"}
               </h2>
               <p>
@@ -226,6 +233,8 @@ export default function StoreProductsPage() {
                   ? "Hiển thị sản phẩm phù hợp với từ khóa tìm kiếm."
                   : categoryNameParam
                     ? `Hiển thị sản phẩm thuộc danh mục ${categoryNameParam} và toàn bộ danh mục con.`
+                    : brandNameParam
+                      ? `Hiển thị sản phẩm thuộc nhãn hàng ${brandNameParam}.`
                     : "Danh sách đầy đủ sản phẩm đang kinh doanh tại GroceryStore."}
               </p>
             </div>

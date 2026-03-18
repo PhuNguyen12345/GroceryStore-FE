@@ -4,15 +4,21 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Search, Menu, ShieldCheck, Clock3 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { categoryService } from "../core/api/categoryService";
+import { brandService } from "../core/api/brandService";
 
 export default function Header() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryTree, setCategoryTree] = useState([]);
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+  const [brands, setBrands] = useState([]);
+  const [showBrandMenu, setShowBrandMenu] = useState(false);
+  const [brandKeyword, setBrandKeyword] = useState("");
   const [loadingCategoryTree, setLoadingCategoryTree] = useState(false);
+  const [loadingBrands, setLoadingBrands] = useState(false);
   const [activeCategoryId, setActiveCategoryId] = useState(null);
   const closeMenuTimerRef = useRef(null);
+  const closeBrandMenuTimerRef = useRef(null);
 
   useEffect(() => {
     const loadCategoryTree = async () => {
@@ -31,12 +37,30 @@ export default function Header() {
     };
 
     loadCategoryTree();
+
+    const loadBrands = async () => {
+      try {
+        setLoadingBrands(true);
+        const result = await brandService.getActiveBrands(0, 200);
+        const list = Array.isArray(result?.content) ? result.content : [];
+        setBrands(list);
+      } catch {
+        setBrands([]);
+      } finally {
+        setLoadingBrands(false);
+      }
+    };
+
+    loadBrands();
   }, []);
 
   useEffect(() => {
     return () => {
       if (closeMenuTimerRef.current) {
         clearTimeout(closeMenuTimerRef.current);
+      }
+      if (closeBrandMenuTimerRef.current) {
+        clearTimeout(closeBrandMenuTimerRef.current);
       }
     };
   }, []);
@@ -45,6 +69,12 @@ export default function Header() {
     () => categoryTree.find((item) => item.id === activeCategoryId) ?? categoryTree[0] ?? null,
     [categoryTree, activeCategoryId]
   );
+
+  const filteredBrands = useMemo(() => {
+    const keyword = brandKeyword.trim().toLowerCase();
+    if (!keyword) return brands;
+    return brands.filter((brand) => String(brand?.name || "").toLowerCase().includes(keyword));
+  }, [brands, brandKeyword]);
 
   const openCategoryMenu = () => {
     if (closeMenuTimerRef.current) {
@@ -60,6 +90,24 @@ export default function Header() {
     }
     closeMenuTimerRef.current = setTimeout(() => {
       setShowCategoryMenu(false);
+    }, 180);
+  };
+
+  const openBrandMenu = () => {
+    if (closeBrandMenuTimerRef.current) {
+      clearTimeout(closeBrandMenuTimerRef.current);
+      closeBrandMenuTimerRef.current = null;
+    }
+    setShowBrandMenu(true);
+  };
+
+  const closeBrandMenu = () => {
+    if (closeBrandMenuTimerRef.current) {
+      clearTimeout(closeBrandMenuTimerRef.current);
+    }
+    closeBrandMenuTimerRef.current = setTimeout(() => {
+      setShowBrandMenu(false);
+      setBrandKeyword("");
     }, 180);
   };
 
@@ -82,6 +130,16 @@ export default function Header() {
     }
 
     const params = new URLSearchParams({ keyword });
+    navigate(`/products?${params.toString()}`);
+  };
+
+  const goToBrandProducts = (brand) => {
+    if (!brand?.id) return;
+    const params = new URLSearchParams({
+      brandId: String(brand.id),
+      brandName: brand.name || "",
+    });
+    setShowBrandMenu(false);
     navigate(`/products?${params.toString()}`);
   };
 
@@ -225,6 +283,66 @@ export default function Header() {
                         )}
                       </div>
                     </div>
+                  </div>
+                )}
+              </Nav.Item>
+
+              <Nav.Item
+                className="position-relative"
+                onMouseEnter={openBrandMenu}
+                onMouseLeave={closeBrandMenu}
+              >
+                <button
+                  type="button"
+                  className="nav-link fw-medium text-dark border-0 bg-transparent category-mega-trigger"
+                  onClick={() => setShowBrandMenu((prev) => !prev)}
+                  onMouseEnter={openBrandMenu}
+                  aria-expanded={showBrandMenu}
+                >
+                  <span>Nhãn hàng</span>
+                </button>
+
+                {showBrandMenu && (
+                  <div className="category-mega-dropdown brand-menu-dropdown shadow-sm">
+                    <div className="category-mega-tabs">
+                      <button type="button" className="active">Nhãn hàng</button>
+                    </div>
+
+                    {loadingBrands ? (
+                      <div className="d-flex align-items-center gap-2 text-muted small p-2">
+                        <Spinner animation="border" size="sm" />
+                        Đang tải nhãn hàng...
+                      </div>
+                    ) : (
+                      <>
+                        <div className="p-2 pb-1">
+                          <Input
+                            type="text"
+                            value={brandKeyword}
+                            onChange={(event) => setBrandKeyword(event.target.value)}
+                            placeholder="Tìm nhãn hàng..."
+                            className="bg-white"
+                          />
+                        </div>
+                        <ul className="category-mega-child-list brand-menu-list">
+                          {filteredBrands.map((brand) => (
+                            <li key={brand.id}>
+                              <button
+                                type="button"
+                                className="category-mega-child-item"
+                                onClick={() => goToBrandProducts(brand)}
+                              >
+                                <span>{brand.name}</span>
+                              </button>
+                            </li>
+                          ))}
+
+                          {filteredBrands.length === 0 ? (
+                            <li className="text-muted small p-2">Không tìm thấy nhãn hàng phù hợp.</li>
+                          ) : null}
+                        </ul>
+                      </>
+                    )}
                   </div>
                 )}
               </Nav.Item>

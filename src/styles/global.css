@@ -266,6 +266,16 @@
   background: #f1f5f9;
 }
 
+.brand-menu-dropdown {
+  width: min(92vw, 320px);
+}
+
+.brand-menu-list {
+  max-height: 260px;
+  overflow-y: auto;
+  padding-top: 0.2rem;
+}
+
 @media (max-width: 991.98px) {
   .category-mega-dropdown {
     position: static;
