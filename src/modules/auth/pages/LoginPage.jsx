@@ -33,12 +33,12 @@ export default function LoginPage() {
 			const authData = await authService.login(values);
 
 			if (!authData.token) {
-				setErrorMessage("Dang nhap khong thanh cong. Vui long thu lai.");
+				setErrorMessage("Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin.");
 				return;
 			}
 
 			if (!ALLOWED_STAFF_ROLES.includes(authData.role)) {
-				setErrorMessage("Tai khoan khong duoc cap quyen truy cap he thong ban hang.");
+				setErrorMessage("Tài khoản không được cấp quyền truy cập hệ thống bán hàng.");
 				return;
 			}
 
@@ -48,7 +48,7 @@ export default function LoginPage() {
 				replace: true,
 			});
 		} catch (error) {
-			const fallbackError = "Sai thong tin dang nhap hoac tai khoan chua duoc kich hoat.";
+			const fallbackError = "Sai thông tin đăng nhập hoặc tài khoản chưa được kích hoạt.";
 			setErrorMessage(error?.response?.data?.message || fallbackError);
 		} finally {
 			setIsSubmitting(false);
@@ -59,7 +59,7 @@ export default function LoginPage() {
 		event.preventDefault();
 
 		if (!forgotUsername.trim() || !forgotEmail.trim()) {
-			setForgotMessage("Vui long nhap ten dang nhap va email cong viec.");
+			setForgotMessage("Vui lòng nhập tên đăng nhập và email công việc.");
 			return;
 		}
 
@@ -76,7 +76,7 @@ export default function LoginPage() {
 		} catch (error) {
 			setForgotMessage(
 				error?.response?.data?.message ||
-					"Khong gui duoc yeu cau dat lai mat khau. Vui long lien he admin de duoc ho tro."
+					"Không gửi được yêu cầu đặt lại mật khẩu. Vui lòng liên hệ admin để được hỗ trợ."
 			);
 		} finally {
 			setIsForgotSubmitting(false);
@@ -94,24 +94,23 @@ export default function LoginPage() {
 								<Building2 size={16} />
 								<span>GroceryStore Internal Access</span>
 							</div>
-							<h1>Dang nhap he thong van hanh cua hang</h1>
+							<h1>Đăng nhập hệ thống vận hành cửa hàng</h1>
 							<p className="mb-4">
-								Tai khoan duoc cap boi quan tri vien. Nhan vien thu ngan va nhan vien kho su dung
-								tai day de xu ly ban hang, ton kho va van hanh theo ca.
+								Tài khoản được cấp bởi quản trị viên cửa hàng. Vui lòng liên hệ admin nếu bạn chưa có tài khoản hoặc gặp vấn đề khi đăng nhập.
 							</p>
 
 							<div className="auth-feature-list">
 								<div className="auth-feature-item">
 									<ShieldCheck size={18} />
-									<span>Chi chap nhan vai tro Cashier hoac Inventory Staff</span>
+									<span>Chỉ chấp nhận vai trò Cashier hoặc Inventory Staff</span>
 								</div>
 								<div className="auth-feature-item">
 									<LockKeyhole size={18} />
-									<span>Moi phien dang nhap duoc bao ve bang token xac thuc</span>
+									<span>Lỗi phiên đăng nhập được bảo vệ bằng token xác thực</span>
 								</div>
 								<div className="auth-feature-item">
 									<CircleHelp size={18} />
-									<span>Quen mat khau? Gui yeu cau dat lai den admin ngay trong trang nay</span>
+									<span>Quên mật khẩu? Gửi yêu cầu đặt lại đến admin ngay trong trang này</span>
 								</div>
 							</div>
 						</div>
@@ -121,7 +120,7 @@ export default function LoginPage() {
 						<div className="auth-card shadow-lg border-0">
 							<div className="auth-card-body">
 								<div className="d-flex align-items-center justify-content-between mb-3">
-									<h2 className="mb-0">Dang nhap</h2>
+									<h2 className="mb-0">Đăng nhập</h2>
 									<span className="badge text-bg-success-subtle">Staff Only</span>
 								</div>
 
@@ -137,10 +136,10 @@ export default function LoginPage() {
 
 								{isForgotMode ? (
 									<form className="auth-forgot-panel mt-3" onSubmit={handleForgotPassword}>
-										<h6 className="fw-bold mb-2">Yeu cau dat lai mat khau</h6>
+										<h6 className="fw-bold mb-2">Yêu cầu đặt lại mật khẩu</h6>
 										<p className="text-secondary mb-3">
-											Nhap thong tin da dang ky voi admin. Yeu cau se duoc xac nhan truoc khi cap
-											mat khau moi.
+											Nhập thông tin đã đăng ký với admin. êu cầu sẽ được xác nhận trước khi cấp
+											mật khẩu mới.
 										</p>
 
 										<div className="row g-2">
@@ -180,19 +179,18 @@ export default function LoginPage() {
 											className="btn btn-outline-dark mt-3 w-100"
 											disabled={isForgotSubmitting}
 										>
-											{isForgotSubmitting ? "Dang gui yeu cau..." : "Gui yeu cau dat lai mat khau"}
+											{isForgotSubmitting ? "Đang gửi yêu cầu..." : "Gửi yêu cầu đặt lại mật khẩu"}
 										</button>
 									</form>
 								) : null}
 
 								<p className="text-secondary small mb-0 mt-3">
-									Tai khoan moi duoc tao boi quan tri vien. Neu ban chua co tai khoan, vui long lien
-									he admin cua cua hang.
+                                        Tài khoản và mật khẩu được cấp bởi quản trị viên cửa hàng. Vui lòng liên hệ admin nếu bạn chưa có tài khoản hoặc gặp vấn đề khi đăng nhập.
 								</p>
 
 								<div className="pt-3 mt-3 border-top">
 									<Link to="/" className="auth-link text-decoration-none">
-										Quay ve trang chu cua cua hang
+										Quay về trang chủ
 									</Link>
 								</div>
 							</div>

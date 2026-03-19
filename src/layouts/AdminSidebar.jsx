@@ -13,6 +13,7 @@ import {
   FaWarehouse,
   FaListUl,
   FaBullhorn,
+  FaUserClock,
 } from "react-icons/fa";
 
 const navItems = [
@@ -20,6 +21,7 @@ const navItems = [
   { to: "/admin/customers", icon: FaUsers, label: "Khách hàng" },
   { to: "/admin/promotions", icon: FaBullhorn, label: "Quảng cáo" },
   { to: "/admin/vouchers", icon: FaTag, label: "Khuyến mãi" },
+  { to: "/admin/hr-shift", icon: FaUserClock, label: "Ca làm việc" },
   { to: "/admin/reports", icon: FaFileAlt, label: "Báo cáo" },
 ];
 

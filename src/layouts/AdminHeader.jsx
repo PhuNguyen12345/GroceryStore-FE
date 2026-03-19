@@ -1,7 +1,17 @@
 import { Navbar, Container, Nav, Dropdown } from "react-bootstrap";
 import { FaUser, FaBell, FaCog, FaSignOutAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/core/store/useAuthStore";
 
 export default function AdminHeader() {
+  const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <Navbar expand="lg" className="admin-topbar px-2" sticky="top">
       <Container fluid>
@@ -46,7 +56,7 @@ export default function AdminHeader() {
                 <Dropdown.Item href="/admin/profile">Hồ sơ</Dropdown.Item>
                 <Dropdown.Item href="/admin/settings">Cài đặt</Dropdown.Item>
                 <Dropdown.Divider />
-                <Dropdown.Item href="/logout" className="text-danger">
+                <Dropdown.Item as="button" type="button" className="text-danger" onClick={handleLogout}>
                   <FaSignOutAlt className="me-2" />
                   Đăng xuất
                 </Dropdown.Item>

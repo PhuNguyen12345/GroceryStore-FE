@@ -32,7 +32,7 @@ export const authService = {
     return {
       message:
         response.data?.message ||
-        "Yeu cau dat lai mat khau da duoc gui. Vui long kiem tra email da dang ky.",
+        "Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email đã đăng ký.",
     };
   },
 };

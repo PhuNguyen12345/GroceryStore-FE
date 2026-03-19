@@ -17,6 +17,7 @@ import PromotionPage from "@/modules/crm-promotion/pages/Promotion";
 import CustomerPage from "@/modules/crm-promotion/pages/Customer";
 import VoucherPage from "@/modules/crm-promotion/pages/Voucher";
 import LoginPage from "@/modules/auth/pages/LoginPage";
+import StaffPage from "@/modules/hr-shift/pages/Staff";
 import PrivateRoutes from "@/core/routes/PrivateRoutes";
 import { ALLOWED_STAFF_ROLES } from "@/core/store/useAuthStore";
 
@@ -48,6 +49,7 @@ export default function AppRoutes() {
         <Route path="/admin/customers" element={<CustomerPage />} />
         <Route path="/admin/promotions" element={<PromotionPage />} />
         <Route path="/admin/vouchers" element={<VoucherPage />} />
+        <Route path="/admin/hr-shift" element={<StaffPage />} />
       </Route>
     </Routes>
   );

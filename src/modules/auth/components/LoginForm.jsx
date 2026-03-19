@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/input-group";
 
 const loginSchema = z.object({
-	username: z.string().min(3, "Vui long nhap ten dang nhap"),
-	password: z.string().min(6, "Mat khau phai co it nhat 6 ky tu"),
+	username: z.string().min(3, "Vui lòng nhập tên đăng nhập"),
+	password: z.string().min(3, "Mật khẩu phải có ít nhất 3 ký tự"),
 });
 
 export default function LoginForm({
@@ -45,7 +45,7 @@ export default function LoginForm({
 
 			<Field>
 				<FieldLabel htmlFor="username" className="fw-semibold">
-					Ten dang nhap nhan vien
+					Tên đăng nhập nhân viên
 				</FieldLabel>
 				<InputGroup>
 					<InputGroupAddon align="inline-start">
@@ -54,7 +54,7 @@ export default function LoginForm({
 					<InputGroupInput
 						id="username"
 						autoComplete="username"
-						placeholder="Nhap ten dang nhap"
+						placeholder="Nhập tên đăng nhập"
 						aria-invalid={Boolean(errors.username)}
 						{...register("username")}
 					/>
@@ -64,7 +64,7 @@ export default function LoginForm({
 
 			<Field>
 				<FieldLabel htmlFor="password" className="fw-semibold">
-					Mat khau
+					Mật khẩu
 				</FieldLabel>
 				<InputGroup>
 					<InputGroupAddon align="inline-start">
@@ -75,7 +75,7 @@ export default function LoginForm({
 						type="password"
 						className="form-control rounded-3"
 						autoComplete="current-password"
-						placeholder="Nhap mat khau"
+						placeholder="Nhập mật khẩu"
 						style={{ paddingLeft: "2.25rem" }}
 						aria-invalid={Boolean(errors.password)}
 						{...register("password")}
@@ -90,12 +90,12 @@ export default function LoginForm({
 					className="btn btn-link p-0 text-decoration-none auth-link"
 					onClick={onForgotPassword}
 				>
-					Quen mat khau?
+					Quên mật khẩu?
 				</button>
 			</div>
 
 			<Button type="submit" className="w-100 auth-login-btn" disabled={isSubmitting}>
-				{isSubmitting ? "Dang dang nhap..." : "Dang nhap"}
+				{isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
 			</Button>
 		</form>
 	);
