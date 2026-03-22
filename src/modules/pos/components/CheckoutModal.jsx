@@ -1,89 +1,74 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { orderService } from "@/core/api/orderService";
 
-const CheckoutModal = ({ orderId, total, voucherId }) => {
-
+const CheckoutModal = ({ orderId, total, voucherId, usedPoints, onClose }) => {
   const [qrUrl, setQrUrl] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const finishPayment = () => {
-
     alert("Payment success");
 
     window.location.reload();
-
   };
 
   const checkoutCash = async () => {
-
     try {
-
       setLoading(true);
 
       await orderService.checkout(orderId, {
         paymentMethod: "CASH",
-        voucherId: voucherId || null
+        voucherId: voucherId || null,
+        usedPoints: usedPoints,
       });
 
       finishPayment();
-
     } catch (err) {
-
       console.error(err);
       alert("Payment failed");
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
   const checkoutQR = async () => {
-
     try {
-
       setLoading(true);
 
       const res = await orderService.checkout(orderId, {
         paymentMethod: "QR_CODE",
-        voucherId: voucherId || null
+        voucherId: voucherId || null,
+        usedPoints: usedPoints,
       });
 
       setQrUrl(res.qrUrl);
-
     } catch (err) {
-
       console.error(err);
       alert("QR payment failed");
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", handleEsc);
+
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, []);
   return (
-
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-
       <div className="bg-white w-[500px] p-6 rounded">
-
-        <h2 className="text-2xl font-bold mb-4">
-          Checkout
-        </h2>
+        <h2 className="text-2xl font-bold mb-4">Checkout</h2>
 
         <div className="text-xl mb-6">
           Total: <b>{total.toLocaleString()} đ</b>
         </div>
 
         {!qrUrl && (
-
           <div className="flex gap-4">
-
             <button
               disabled={loading}
               onClick={checkoutCash}
@@ -99,24 +84,14 @@ const CheckoutModal = ({ orderId, total, voucherId }) => {
             >
               Bank QR
             </button>
-
           </div>
-
         )}
 
         {qrUrl && (
-
           <div className="text-center">
+            <p className="mb-3">Scan QR to pay</p>
 
-            <p className="mb-3">
-              Scan QR to pay
-            </p>
-
-            <img
-              src={qrUrl}
-              alt="QR"
-              className="mx-auto w-64"
-            />
+            <img src={qrUrl} alt="QR" className="mx-auto w-64" />
 
             <button
               onClick={finishPayment}
@@ -124,17 +99,11 @@ const CheckoutModal = ({ orderId, total, voucherId }) => {
             >
               Done
             </button>
-
           </div>
-
         )}
-
       </div>
-
     </div>
-
   );
-
 };
 
 export default CheckoutModal;

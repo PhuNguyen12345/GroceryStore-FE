@@ -3,7 +3,6 @@ import { productService } from "@/core/api/productService";
 import { productUnitService } from "@/core/api/productUnitService";
 
 const ProductItem = ({ product, onAdd }) => {
-
   const [qty, setQty] = useState(1);
   const [units, setUnits] = useState([]);
   const [selectedUnit, setSelectedUnit] = useState(null);
@@ -33,17 +32,16 @@ const ProductItem = ({ product, onAdd }) => {
 
   const handleUnitChange = (e) => {
     const unitId = Number(e.target.value);
-    const unit = units.find(u => u.id === unitId);
+    const unit = units.find((u) => u.id === unitId);
     setSelectedUnit(unit);
   };
 
   const handleAdd = () => {
-
     if (!selectedUnit) return;
 
     onAdd({
       productUnitId: selectedUnit.id,
-      quantity: qty
+      quantity: qty,
     });
 
     setQty(1);
@@ -51,7 +49,6 @@ const ProductItem = ({ product, onAdd }) => {
 
   return (
     <div className="flex items-center border p-3 rounded gap-4">
-
       {/* IMAGE */}
       <img
         src={productService.toAbsoluteMediaUrl(product.imageUrl)}
@@ -61,22 +58,18 @@ const ProductItem = ({ product, onAdd }) => {
 
       {/* INFO */}
       <div className="flex-1">
-
-        <div className="font-medium">
-          {product.name}
-        </div>
+        <div className="font-medium">{product.name}</div>
 
         {/* UNIT SELECT */}
         <div className="mt-2 flex gap-2 items-center">
-
           <select
             value={selectedUnit?.id || ""}
             onChange={handleUnitChange}
             className="border px-2 py-1"
           >
-            {units.map(u => (
+            {units.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.unitName} - {u.price}₫
+                {u.unitName} - {u.sellingPrice}₫
               </option>
             ))}
           </select>
@@ -87,27 +80,17 @@ const ProductItem = ({ product, onAdd }) => {
               {selectedUnit.price}₫
             </div>
           )}
-
         </div>
 
         {/* QUANTITY */}
         <div className="flex items-center gap-2 mt-2">
-
-          <button
-            className="px-2 border"
-            onClick={decrease}
-          >
+          <button className="px-2 border" onClick={decrease}>
             -
           </button>
 
-          <div className="px-3">
-            {qty}
-          </div>
+          <div className="px-3">{qty}</div>
 
-          <button
-            className="px-2 border"
-            onClick={increase}
-          >
+          <button className="px-2 border" onClick={increase}>
             +
           </button>
 
@@ -115,13 +98,10 @@ const ProductItem = ({ product, onAdd }) => {
             className="ml-4 bg-green-500 text-white px-4 py-1 rounded"
             onClick={handleAdd}
           >
-            Add
+            Thêm
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 };
