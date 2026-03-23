@@ -1,0 +1,118 @@
+.auth-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(16, 185, 129, 0.22), transparent 36%),
+    radial-gradient(circle at 88% 22%, rgba(30, 64, 175, 0.24), transparent 37%),
+    linear-gradient(160deg, #f2f7f5 0%, #f9fbff 42%, #ebf4ff 100%);
+}
+
+.auth-noise {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(15, 23, 42, 0.06) 0.6px, transparent 0.6px);
+  background-size: 6px 6px;
+  opacity: 0.35;
+}
+
+.auth-intro-panel {
+  position: relative;
+  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 1.2rem;
+  padding: 1.5rem;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(238, 245, 250, 0.76));
+  box-shadow: 0 16px 45px rgba(15, 23, 42, 0.13);
+}
+
+.auth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #0f172a;
+  color: #f8fafc;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  margin-bottom: 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.auth-intro-panel h1 {
+  font-size: clamp(1.85rem, 4.2vw, 2.65rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.85rem;
+  color: #0f172a;
+}
+
+.auth-intro-panel p {
+  color: #334155;
+  max-width: 60ch;
+}
+
+.auth-feature-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.auth-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  border-radius: 0.75rem;
+  padding: 0.72rem 0.82rem;
+  color: #0f172a;
+}
+
+.auth-card {
+  position: relative;
+  z-index: 1;
+  border-radius: 1.3rem;
+  background: #ffffff;
+}
+
+.auth-card-body {
+  padding: 1.4rem;
+}
+
+.auth-link {
+  color: #0f3d2d;
+  font-weight: 600;
+}
+
+.auth-link:hover {
+  color: #14532d;
+}
+
+.auth-login-btn[data-slot="button"] {
+  height: 2.75rem;
+  border-radius: 0.8rem;
+  background: linear-gradient(130deg, #115e3b 0%, #1d834f 60%, #1f9b5c 100%);
+  color: #f8fafc;
+}
+
+.auth-login-btn[data-slot="button"]:hover {
+  filter: brightness(1.04);
+}
+
+.auth-forgot-panel {
+  background: linear-gradient(155deg, #f8fafc, #f3f9f6);
+  border: 1px solid #d9e5df;
+  border-radius: 0.85rem;
+  padding: 0.95rem;
+}
+
+@media (min-width: 768px) {
+  .auth-intro-panel {
+    padding: 2rem;
+  }
+
+  .auth-card-body {
+    padding: 1.8rem;
+  }
+}
