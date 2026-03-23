@@ -17,7 +17,7 @@ import {
 } from "react-icons/fa";
 
 const navItems = [
-  { to: "/admin/orders", icon: FaShoppingCart, label: "Đơn hàng" },
+  { to: "/orders", icon: FaShoppingCart, label: "Đơn hàng" },
   { to: "/admin/customers", icon: FaUsers, label: "Khách hàng" },
   { to: "/admin/promotions", icon: FaBullhorn, label: "Quảng cáo" },
   { to: "/admin/vouchers", icon: FaTag, label: "Khuyến mãi" },
@@ -46,7 +46,9 @@ export default function Sidebar() {
         <NavLink
           to="/admin"
           end
-          className={({ isActive }) => `admin-nav-link ${isActive ? "active" : ""}`}
+          className={({ isActive }) =>
+            `admin-nav-link ${isActive ? "active" : ""}`
+          }
         >
           <FaChartBar size={16} />
           <span>Bảng điều khiển</span>
@@ -54,7 +56,9 @@ export default function Sidebar() {
 
         <button
           type="button"
-          onClick={() => setExpandedMenu(expandedMenu === "product" ? null : "product")}
+          onClick={() =>
+            setExpandedMenu(expandedMenu === "product" ? null : "product")
+          }
           className="admin-nav-toggle"
         >
           <FaBox size={16} />
@@ -63,7 +67,8 @@ export default function Sidebar() {
             size={12}
             style={{
               marginLeft: "auto",
-              transform: expandedMenu === "product" ? "rotate(180deg)" : "rotate(0deg)",
+              transform:
+                expandedMenu === "product" ? "rotate(180deg)" : "rotate(0deg)",
               transition: "transform 0.2s ease",
             }}
           />
@@ -95,7 +100,9 @@ export default function Sidebar() {
             <NavLink
               key={item.to}
               to={item.to}
-              className={({ isActive }) => `admin-nav-link ${isActive ? "active" : ""}`}
+              className={({ isActive }) =>
+                `admin-nav-link ${isActive ? "active" : ""}`
+              }
             >
               <Icon size={16} />
               <span>{item.label}</span>
@@ -103,10 +110,15 @@ export default function Sidebar() {
           );
         })}
 
-        <div className="mt-3 pt-2" style={{ borderTop: "1px solid rgba(255, 255, 255, 0.18)" }}>
+        <div
+          className="mt-3 pt-2"
+          style={{ borderTop: "1px solid rgba(255, 255, 255, 0.18)" }}
+        >
           <NavLink
             to="/admin/settings"
-            className={({ isActive }) => `admin-nav-link ${isActive ? "active" : ""}`}
+            className={({ isActive }) =>
+              `admin-nav-link ${isActive ? "active" : ""}`
+            }
           >
             <FaCog size={16} />
             <span>Cài đặt</span>

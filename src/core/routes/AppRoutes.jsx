@@ -1,4 +1,4 @@
-﻿import { Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import AdminDashboard from "../../modules/dashboard/pages/AdminDashboard";
 import BrandPage from "../../modules/product/pages/Brand";
 import DashboardLayout from "../../layouts/DashboardLayout";
@@ -20,6 +20,7 @@ import LoginPage from "@/modules/auth/pages/LoginPage";
 import StaffPage from "@/modules/hr-shift/pages/Staff";
 import PrivateRoutes from "@/core/routes/PrivateRoutes";
 import { ALLOWED_STAFF_ROLES } from "@/core/store/useAuthStore";
+import POSPage from '@/modules/pos/pages/POSPage';
 
 export default function AppRoutes() {
   return (
@@ -51,6 +52,7 @@ export default function AppRoutes() {
         <Route path="/admin/vouchers" element={<VoucherPage />} />
         <Route path="/admin/hr-shift" element={<StaffPage />} />
       </Route>
+      <Route path="/orders" element={<POSPage />}/>
     </Routes>
   );
 }

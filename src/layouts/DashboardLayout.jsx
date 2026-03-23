@@ -21,6 +21,7 @@ export default function DashboardLayout({ children }) {
           <FeaturedProducts />
           <BlogHighlights />
         </div>
+        
         {children}
       </main>
 
