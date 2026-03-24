@@ -10,8 +10,15 @@ function normalizeRole(role = "") {
 
 function normalizeLoginResponse(data = {}) {
   const token = data.token || data.accessToken || data.jwt || "";
-  const user = data.user || data.account || data.staff || null;
-  const role = normalizeRole(data.role || user?.role || user?.authority || "");
+  const rawUser = data.user || data.account || data.staff || null;
+  const role = normalizeRole(data.role || rawUser?.role || rawUser?.authority || "");
+  const user = rawUser || {
+    id: data.employeeId || data.id || null,
+    employeeId: data.employeeId || data.id || null,
+    username: data.username || "",
+    fullName: data.fullName || "",
+    role,
+  };
 
   return {
     token,

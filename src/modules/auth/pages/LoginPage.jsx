@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+﻿import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Building2, CircleHelp, LockKeyhole, ShieldCheck } from "lucide-react";
 import LoginForm from "@/modules/auth/components/LoginForm";
 import { authService } from "@/core/api/authService";
@@ -7,13 +7,14 @@ import { ALLOWED_STAFF_ROLES, useAuthStore } from "@/core/store/useAuthStore";
 import "@/modules/auth/styles/auth.css";
 
 const ROLE_LANDING_PATH = {
-	CASHIER: "/admin",
-	INVENTORY_STAFF: "/admin/products",
+	ADMIN: "/admin",
+	STORE_MANAGER: "/admin",
+	INVENTORY_STAFF: "/admin/inventory",
+	CASHIER: "/orders",
 };
 
 export default function LoginPage() {
 	const navigate = useNavigate();
-	const location = useLocation();
 	const loginSuccess = useAuthStore((state) => state.loginSuccess);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isForgotSubmitting, setIsForgotSubmitting] = useState(false);
@@ -22,8 +23,6 @@ export default function LoginPage() {
 	const [forgotMessage, setForgotMessage] = useState("");
 	const [forgotUsername, setForgotUsername] = useState("");
 	const [forgotEmail, setForgotEmail] = useState("");
-
-	const fromRoute = location.state?.from?.pathname;
 
 	const handleLogin = async (values) => {
 		try {
@@ -44,7 +43,7 @@ export default function LoginPage() {
 
 			loginSuccess(authData);
 
-			navigate(fromRoute || ROLE_LANDING_PATH[authData.role] || "/admin", {
+			navigate(ROLE_LANDING_PATH[authData.role] || "/admin", {
 				replace: true,
 			});
 		} catch (error) {
@@ -96,21 +95,22 @@ export default function LoginPage() {
 							</div>
 							<h1>Đăng nhập hệ thống vận hành cửa hàng</h1>
 							<p className="mb-4">
-								Tài khoản được cấp bởi quản trị viên cửa hàng. Vui lòng liên hệ admin nếu bạn chưa có tài khoản hoặc gặp vấn đề khi đăng nhập.
+								Tài khoản được cấp bởi quản trị viên cửa hàng. Vui lòng liên hệ admin nếu bạn chưa có
+								tài khoản hoặc gặp vấn đề khi đăng nhập.
 							</p>
 
 							<div className="auth-feature-list">
 								<div className="auth-feature-item">
 									<ShieldCheck size={18} />
-									<span>Chỉ chấp nhận vai trò Cashier hoặc Inventory Staff</span>
+									<span>Hỗ trợ vai trò Admin, Store Manager, Inventory Staff và Cashier</span>
 								</div>
 								<div className="auth-feature-item">
 									<LockKeyhole size={18} />
-									<span>Lỗi phiên đăng nhập được bảo vệ bằng token xác thực</span>
+									<span>Phiên đăng nhập được bảo vệ bằng token xác thực</span>
 								</div>
 								<div className="auth-feature-item">
 									<CircleHelp size={18} />
-									<span>Quên mật khẩu? Gửi yêu cầu đặt lại đến admin ngay trong trang này</span>
+									<span>Quên mật khẩu? Gửi yêu cầu đặt lại ngay trong trang này</span>
 								</div>
 							</div>
 						</div>
@@ -138,26 +138,26 @@ export default function LoginPage() {
 									<form className="auth-forgot-panel mt-3" onSubmit={handleForgotPassword}>
 										<h6 className="fw-bold mb-2">Yêu cầu đặt lại mật khẩu</h6>
 										<p className="text-secondary mb-3">
-											Nhập thông tin đã đăng ký với admin. êu cầu sẽ được xác nhận trước khi cấp
-											mật khẩu mới.
+											Nhập thông tin đã đăng ký với admin. Yêu cầu sẽ được xác nhận trước khi cấp mật
+											khẩu mới.
 										</p>
 
 										<div className="row g-2">
 											<div className="col-12">
 												<label htmlFor="forgot-username" className="form-label fw-semibold mb-1">
-													Ten dang nhap
+													Tên đăng nhập
 												</label>
 												<input
 													id="forgot-username"
 													className="form-control"
 													value={forgotUsername}
 													onChange={(event) => setForgotUsername(event.target.value)}
-													placeholder="Vi du: cashier.nguyen"
+													placeholder="Ví dụ: cashier.nguyen"
 												/>
 											</div>
 											<div className="col-12">
 												<label htmlFor="forgot-email" className="form-label fw-semibold mb-1">
-													Email cong viec
+													Email công việc
 												</label>
 												<input
 													id="forgot-email"
@@ -185,7 +185,8 @@ export default function LoginPage() {
 								) : null}
 
 								<p className="text-secondary small mb-0 mt-3">
-                                        Tài khoản và mật khẩu được cấp bởi quản trị viên cửa hàng. Vui lòng liên hệ admin nếu bạn chưa có tài khoản hoặc gặp vấn đề khi đăng nhập.
+									Tài khoản và mật khẩu được cấp bởi quản trị viên cửa hàng. Vui lòng liên hệ admin nếu
+									bạn chưa có tài khoản hoặc gặp vấn đề khi đăng nhập.
 								</p>
 
 								<div className="pt-3 mt-3 border-top">

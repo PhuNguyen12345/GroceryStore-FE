@@ -1,11 +1,20 @@
 const isBrowser = typeof window !== "undefined";
 
-export function getStorageItem(key, fallback = null) {
+function getStorage(type = "local") {
+	if (!isBrowser) {
+		return null;
+	}
+
+	return type === "session" ? window.sessionStorage : window.localStorage;
+}
+
+export function getStorageItem(key, fallback = null, type = "local") {
 	if (!isBrowser) {
 		return fallback;
 	}
 
-	const rawValue = window.localStorage.getItem(key);
+	const storage = getStorage(type);
+	const rawValue = storage?.getItem(key);
 
 	if (!rawValue) {
 		return fallback;
@@ -18,18 +27,20 @@ export function getStorageItem(key, fallback = null) {
 	}
 }
 
-export function setStorageItem(key, value) {
+export function setStorageItem(key, value, type = "local") {
 	if (!isBrowser) {
 		return;
 	}
 
-	window.localStorage.setItem(key, JSON.stringify(value));
+	const storage = getStorage(type);
+	storage?.setItem(key, JSON.stringify(value));
 }
 
-export function clearStorageItem(key) {
+export function clearStorageItem(key, type = "local") {
 	if (!isBrowser) {
 		return;
 	}
 
-	window.localStorage.removeItem(key);
+	const storage = getStorage(type);
+	storage?.removeItem(key);
 }

@@ -118,6 +118,10 @@
   backdrop-filter: blur(6px);
 }
 
+.admin-no-caret.dropdown-toggle::after {
+  display: none !important;
+}
+
 .admin-footer {
   border-top: 1px solid #dfe6ee;
   background: #ffffff;

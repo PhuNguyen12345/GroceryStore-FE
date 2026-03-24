@@ -5,6 +5,16 @@ const EMPLOYEE_BASE = "/employees";
 const toPageParams = (page = 0, size = 10) => ({ page, size });
 
 export const employeeService = {
+  getEmployeeById: async (id) => {
+    const response = await axiosClient.get(`${EMPLOYEE_BASE}/${id}`);
+    return response.data;
+  },
+
+  getEmployeeByUsername: async (username) => {
+    const response = await axiosClient.get(`${EMPLOYEE_BASE}/username/${encodeURIComponent(username)}`);
+    return response.data;
+  },
+
   getAllEmployees: async (page = 0, size = 10) => {
     const response = await axiosClient.get(EMPLOYEE_BASE, { params: toPageParams(page, size) });
     return response.data;

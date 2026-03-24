@@ -208,9 +208,6 @@ export default function Header() {
               <Nav.Link as={NavLink} to="/" end className="fw-medium text-dark">
                 Trang chủ
               </Nav.Link>
-              <Nav.Link as={NavLink} to="/orders" className="fw-medium text-dark">
-              Orders
-              </Nav.Link>
               <Nav.Item
                 className="position-relative"
                 onMouseEnter={openCategoryMenu}
