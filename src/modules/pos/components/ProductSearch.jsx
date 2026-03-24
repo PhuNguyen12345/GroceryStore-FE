@@ -21,7 +21,7 @@ const ProductSearch = ({ onSelect }) => {
     <div className="flex gap-2 mb-3">
       <input
         className="border border-gray-200 rounded-lg px-4 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-[#2c9a67]"
-        placeholder="Scan barcode or search..."
+        placeholder="Tìm kiếm sản phẩm..."
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
       />

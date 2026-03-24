@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { customerService } from "@/core/api/customerService";
 
 const CustomerPanel = ({ onSelect }) => {
@@ -10,6 +10,7 @@ const CustomerPanel = ({ onSelect }) => {
     fullName: "",
     phone: "",
   });
+
   const useDebounce = (value, delay = 400) => {
     const [debounced, setDebounced] = useState(value);
 
@@ -20,6 +21,7 @@ const CustomerPanel = ({ onSelect }) => {
 
     return debounced;
   };
+
   const debouncedKeyword = useDebounce(keyword, 400);
 
   useEffect(() => {
@@ -29,25 +31,39 @@ const CustomerPanel = ({ onSelect }) => {
     }
 
     const fetch = async () => {
-      const res = await customerService.searchCustomers(debouncedKeyword);
-      setCustomers(res.content || []);
+      try {
+        const res = await customerService.searchCustomers({ keyword: debouncedKeyword });
+        setCustomers(res?.content || []);
+      } catch {
+        setCustomers([]);
+      }
     };
 
     fetch();
   }, [debouncedKeyword]);
 
   const handleCreate = async () => {
-    const res = await customerService.saveCustomer(newCustomer);
+    const payload = {
+      fullName: newCustomer.fullName?.trim(),
+      phone: newCustomer.phone?.trim(),
+    };
 
-    onSelect(res);
+    if (!payload.phone) {
+      alert("Vui lòng nhập số điện thoại khách hàng");
+      return;
+    }
+
+    const created = await customerService.saveCustomer(payload);
+    onSelect(created);
     setShowForm(false);
+    setKeyword("");
+    setCustomers([]);
+    setNewCustomer({ fullName: "", phone: "" });
   };
 
   return (
     <div className="mb-4">
       <h3 className="font-semibold mb-2">Khách hàng</h3>
-
-      {/* SEARCH */}
 
       <div className="flex gap-2 mb-2">
         <input
@@ -58,8 +74,6 @@ const CustomerPanel = ({ onSelect }) => {
         />
       </div>
 
-      {/* RESULT */}
-
       {customers.map((c) => (
         <div
           key={c.id}
@@ -69,8 +83,6 @@ const CustomerPanel = ({ onSelect }) => {
           {c.fullName} - {c.phone}
         </div>
       ))}
-
-      {/* ADD NEW */}
 
       <button
         onClick={() => setShowForm(!showForm)}
@@ -84,17 +96,15 @@ const CustomerPanel = ({ onSelect }) => {
           <input
             placeholder="Tên"
             className="border p-2 w-full rounded"
-            onChange={(e) =>
-              setNewCustomer({ ...newCustomer, name: e.target.value })
-            }
+            value={newCustomer.fullName}
+            onChange={(e) => setNewCustomer({ ...newCustomer, fullName: e.target.value })}
           />
 
           <input
             placeholder="SĐT"
             className="border p-2 w-full rounded"
-            onChange={(e) =>
-              setNewCustomer({ ...newCustomer, phone: e.target.value })
-            }
+            value={newCustomer.phone}
+            onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
           />
 
           <button

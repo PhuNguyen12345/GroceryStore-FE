@@ -1,4 +1,4 @@
-﻿import axiosClient from "@/core/api/axiosClient";
+import axiosClient from "@/core/api/axiosClient";
 
 const API = "/pos/orders";
 
@@ -23,6 +23,26 @@ export const orderService = {
 
   checkout: async (orderId, payload) => {
     const res = await axiosClient.post(`${API}/${orderId}/checkout`, payload);
+    return res.data;
+  },
+
+  createQr: async (orderId) => {
+    const res = await axiosClient.post(`${API}/${orderId}/create-qr`);
+    return res.data;
+  },
+
+  getPendingOrders: async () => {
+    const res = await axiosClient.get(`${API}/pending`);
+    return res.data;
+  },
+
+  getOrderById: async (orderId) => {
+    const res = await axiosClient.get(`${API}/${orderId}`);
+    return res.data;
+  },
+
+  syncPaymentStatus: async (orderId) => {
+    const res = await axiosClient.get(`${API}/${orderId}/sync-payment`);
     return res.data;
   },
 };
