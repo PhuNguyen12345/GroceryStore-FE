@@ -63,7 +63,9 @@ const CartPanel = ({
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Giỏ hàng</h2>
 
-      {(cart || []).length === 0 && <div className="text-gray-400">Giỏ hàng trống</div>}
+      {(cart || []).length === 0 && (
+        <div className="text-gray-400">Giỏ hàng trống</div>
+      )}
 
       {(cart || []).map((item) => (
         <div
@@ -101,7 +103,9 @@ const CartPanel = ({
             >
               <div>
                 <div className="font-medium">{v.code}</div>
-                <div className="text-sm text-gray-500">Giảm giá: {v.discountValue}</div>
+                <div className="text-sm text-gray-500">
+                  Giảm giá: {v.discountValue}
+                </div>
               </div>
 
               <button
@@ -123,7 +127,10 @@ const CartPanel = ({
             type="number"
             value={usedPoints}
             onChange={(e) => onChangePoints(Number(e.target.value))}
-            max={Math.min(customer?.loyaltyPoints || 0, Math.floor(afterVoucher / 1000))}
+            max={Math.min(
+              customer?.loyaltyPoints || 0,
+              Math.floor(afterVoucher / 1000),
+            )}
             min={0}
             className="border p-2 w-full rounded"
             placeholder="Nhập số điểm"
@@ -131,14 +138,19 @@ const CartPanel = ({
           <button
             onClick={() =>
               onChangePoints(
-                Math.min(customer.loyaltyPoints, Math.floor(afterVoucher / 1000)),
+                Math.min(
+                  customer.loyaltyPoints,
+                  Math.floor(afterVoucher / 1000),
+                ),
               )
             }
             className="text-sm text-blue-600 mt-1"
           >
             Dùng tối đa
           </button>
-          <div className="text-xs text-gray-500 mt-1">Có: {customer.loyaltyPoints} điểm</div>
+          <div className="text-xs text-gray-500 mt-1">
+            Có: {customer.loyaltyPoints} điểm
+          </div>
         </div>
       )}
 
@@ -181,6 +193,9 @@ const CartPanel = ({
           total={finalTotal}
           onClose={() => setOpenCheckout(false)}
           onPaymentSuccess={onPaymentSuccess}
+          usedPoints={usedPoints}
+          voucherId={selectedVoucher?.code || ""}
+          customerId={customer?.id}
         />
       )}
     </div>

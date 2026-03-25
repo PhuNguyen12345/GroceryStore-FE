@@ -8,7 +8,15 @@ function getErrorMessage(err, fallback) {
   return fallback;
 }
 
-const CheckoutModal = ({ orderId, total, onClose, onPaymentSuccess }) => {
+const CheckoutModal = ({
+  orderId,
+  total,
+  onClose,
+  onPaymentSuccess,
+  usedPoints,
+  voucherId,
+  customerId,
+}) => {
   const [qrUrl, setQrUrl] = useState(null);
   const [checkoutUrl, setCheckoutUrl] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -32,6 +40,9 @@ const CheckoutModal = ({ orderId, total, onClose, onPaymentSuccess }) => {
       await orderService.checkout(orderId, {
         paymentMethod: "CASH",
         amountPaid: total,
+        usedPoints: usedPoints,
+        voucherId: voucherId,
+        customerId: customerId,
       });
       finishPayment();
     } catch (err) {
@@ -86,6 +97,8 @@ const CheckoutModal = ({ orderId, total, onClose, onPaymentSuccess }) => {
       await orderService.checkout(orderId, {
         paymentMethod: "QR_CODE",
         amountPaid: total,
+        usedPoints: usedPoints,
+        voucherId: voucherId,
       });
       finishPayment();
     } catch (err) {
