@@ -1,4 +1,4 @@
-import { Alert, Badge, Spinner, Table } from "react-bootstrap";
+﻿import { Alert, Badge, Spinner, Table } from "react-bootstrap";
 import { FaEdit, FaTrash, FaUndo } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 
@@ -21,6 +21,7 @@ export default function ProductUnitList({ units, loading, onEdit, onDelete, onRe
         <thead>
           <tr>
             <th>STT</th>
+            <th>Sản phẩm</th>
             <th>Tên đơn vị</th>
             <th>Hệ số</th>
             <th>Giá bán</th>
@@ -35,6 +36,7 @@ export default function ProductUnitList({ units, loading, onEdit, onDelete, onRe
           {units.map((item, index) => (
             <tr key={item.id}>
               <td className="fw-semibold">{index + 1}</td>
+              <td>{item.productName || "-"}</td>
               <td>{item.unitName}</td>
               <td>{item.conversionFactor}</td>
               <td>{Number(item.sellingPrice || 0).toLocaleString("vi-VN")}</td>
@@ -73,4 +75,3 @@ export default function ProductUnitList({ units, loading, onEdit, onDelete, onRe
     </div>
   );
 }
-
