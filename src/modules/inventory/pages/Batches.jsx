@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Badge, Card, Container, Form, Table } from "react-bootstrap";
 import AdminLayout from "@/layouts/AdminLayout";
 import { Input } from "@/components/ui/input";
@@ -86,15 +86,15 @@ export default function BatchesPage() {
           <Card.Body>
             <Form onSubmit={applyFilter}>
               <div className="row g-2">
-                <div className="col-12 col-md-4"><Input placeholder="Mã lô" value={filters.batchCode} onChange={(e) => setFilters((p) => ({ ...p, batchCode: e.target.value }))} /></div>
-                <div className="col-12 col-md-4"><Input placeholder="Tên sản phẩm" value={filters.productName} onChange={(e) => setFilters((p) => ({ ...p, productName: e.target.value }))} /></div>
-                <div className="col-12 col-md-4"><Input placeholder="Tên kho" value={filters.warehouseName} onChange={(e) => setFilters((p) => ({ ...p, warehouseName: e.target.value }))} /></div>
-                <div className="col-12 col-md-4"><Input placeholder="Tên nhà cung cấp" value={filters.supplierName} onChange={(e) => setFilters((p) => ({ ...p, supplierName: e.target.value }))} /></div>
-                <div className="col-12 col-md-3"><Form.Control type="date" value={filters.fromExpiryDate} onChange={(e) => setFilters((p) => ({ ...p, fromExpiryDate: e.target.value }))} /></div>
-                <div className="col-12 col-md-3"><Form.Control type="date" value={filters.toExpiryDate} onChange={(e) => setFilters((p) => ({ ...p, toExpiryDate: e.target.value }))} /></div>
-                <div className="col-12 col-md-2 d-flex gap-2">
-                  <Button type="submit" className="w-100">Lọc</Button>
-                  <Button type="button" variant="outline" className="w-100" onClick={resetFilter}>Đặt lại</Button>
+                <div className="col-12 col-md-3"><Input placeholder="Mã lô" value={filters.batchCode} onChange={(e) => setFilters((p) => ({ ...p, batchCode: e.target.value }))} /></div>
+                <div className="col-12 col-md-3"><Input placeholder="Tên sản phẩm" value={filters.productName} onChange={(e) => setFilters((p) => ({ ...p, productName: e.target.value }))} /></div>
+                <div className="col-12 col-md-3"><Input placeholder="Tên kho" value={filters.warehouseName} onChange={(e) => setFilters((p) => ({ ...p, warehouseName: e.target.value }))} /></div>
+                <div className="col-12 col-md-3"><Input placeholder="Tên nhà cung cấp" value={filters.supplierName} onChange={(e) => setFilters((p) => ({ ...p, supplierName: e.target.value }))} /></div>
+                <div className="col-12 col-md-3"><Form.Control type={filters.fromExpiryDate ? "date" : "text"} onFocus={(e) => (e.target.type = "date")} onBlur={(e) => (e.target.type = filters.fromExpiryDate ? "date" : "text")} placeholder="Từ ngày hết hạn" value={filters.fromExpiryDate} onChange={(e) => setFilters((p) => ({ ...p, fromExpiryDate: e.target.value }))} /></div>
+                <div className="col-12 col-md-3"><Form.Control type={filters.toExpiryDate ? "date" : "text"} onFocus={(e) => (e.target.type = "date")} onBlur={(e) => (e.target.type = filters.toExpiryDate ? "date" : "text")} placeholder="Đến ngày hết hạn" value={filters.toExpiryDate} onChange={(e) => setFilters((p) => ({ ...p, toExpiryDate: e.target.value }))} /></div>
+                <div className="col-12 col-md-6 d-flex gap-2">
+                  <Button type="submit" className="w-50">Lọc</Button>
+                  <Button type="button" variant="outline" className="w-50" onClick={resetFilter}>Đặt lại</Button>
                 </div>
               </div>
             </Form>

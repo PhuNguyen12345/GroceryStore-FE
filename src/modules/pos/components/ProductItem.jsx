@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { productService } from "@/core/api/productService";
 import { productUnitService } from "@/core/api/productUnitService";
 import { inventoryService } from "@/core/api/inventoryService";
@@ -47,7 +47,7 @@ async function getUnitStockAcrossWarehouses(productUnitId) {
   return stockByWarehouse.reduce((sum, qty) => sum + Number(qty || 0), 0);
 }
 
-const ProductItem = ({ product, onAdd }) => {
+const ProductItem = ({ product, onAdd, refreshKey }) => {
   const [qty, setQty] = useState(1);
   const [units, setUnits] = useState([]);
   const [selectedUnit, setSelectedUnit] = useState(null);
@@ -105,7 +105,7 @@ const ProductItem = ({ product, onAdd }) => {
     return () => {
       mounted = false;
     };
-  }, [selectedUnit?.id]);
+  }, [selectedUnit?.id, refreshKey]);
 
   const increase = () => setQty((prev) => prev + 1);
 

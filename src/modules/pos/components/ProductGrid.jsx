@@ -26,7 +26,7 @@ function getPageItems(total, current) {
   return pages;
 }
 
-const ProductGrid = ({ products, onAdd, page, totalPages, onPageChange }) => {
+const ProductGrid = ({ products, onAdd, page, totalPages, onPageChange, refreshKey }) => {
   const currentPage = Number(page || 0) + 1;
   const pageCount = Math.max(Number(totalPages || 0), 1);
   const pageItems = getPageItems(pageCount, currentPage);
@@ -34,7 +34,7 @@ const ProductGrid = ({ products, onAdd, page, totalPages, onPageChange }) => {
   return (
     <div className="flex flex-col gap-3">
       {products.map((p) => (
-        <ProductItem key={p.id} product={p} onAdd={onAdd} />
+        <ProductItem key={p.id} product={p} onAdd={onAdd} refreshKey={refreshKey} />
       ))}
 
       <div className="admin-pagination mt-4">

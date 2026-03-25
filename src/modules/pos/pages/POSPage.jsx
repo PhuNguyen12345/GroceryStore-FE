@@ -52,34 +52,13 @@ function writeOrderCache(orders, activeOrderId) {
   }
 }
 
-async function hydrateCachedOrders(cachedOrders) {
-  if (!cachedOrders.length) return [];
 
-  const hydrated = await Promise.all(
-    cachedOrders.map(async (cached) => {
-      try {
-        const latest = await orderService.getOrderById(cached.id);
-        if (getOrderStatus(latest) !== "PENDING") return null;
-
-        return {
-          ...mapApiOrderToUi(latest),
-          customer: cached.customer || latest.customer || null,
-          selectedVoucher: cached.selectedVoucher || null,
-          usedPoints: cached.usedPoints || 0,
-        };
-      } catch {
-        return cached;
-      }
-    }),
-  );
-
-  return hydrated.filter(Boolean);
-}
 
 const POSPage = () => {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [activeOrderId, setActiveOrderId] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [paymentNotice, setPaymentNotice] = useState(null);
@@ -92,8 +71,16 @@ const POSPage = () => {
   const currentUser = useAuthStore((state) => state.user);
   const currentEmployeeId = currentUser?.employeeId || currentUser?.id || null;
 
-  const setCustomerForOrder = (customer) => {
-    setOrders((prev) => prev.map((o) => (o.id === activeOrderId ? { ...o, customer } : o)));
+  const setCustomerForOrder = async (customer) => {
+    if (!activeOrderId) return;
+    try {
+      if (customer?.id) {
+        await orderService.updateCustomer(activeOrderId, customer.id);
+      }
+      setOrders((prev) => prev.map((o) => (o.id === activeOrderId ? { ...o, customer } : o)));
+    } catch (err) {
+      console.error("Loi khi cap nhat khach hang", err);
+    }
   };
 
   const setVoucherForOrder = (voucher) => {
@@ -156,17 +143,38 @@ const POSPage = () => {
 
   useEffect(() => {
     const bootstrap = async () => {
-      const cached = readOrderCache();
-      if (cached.orders.length) {
-        const pendingOnly = await hydrateCachedOrders(cached.orders);
+      try {
+        const pendingOrdersAPI = await orderService.getPendingOrders();
+        const cached = readOrderCache();
+        const cachedOrders = cached.orders || [];
+        
+        let pendingOnly = [];
+        if (pendingOrdersAPI && pendingOrdersAPI.length > 0) {
+          pendingOnly = pendingOrdersAPI.map((o) => {
+            const cachedMatch = cachedOrders.find((c) => c.id === o.id);
+            return {
+              ...mapApiOrderToUi(o),
+              customer: o.customer || cachedMatch?.customer || null,
+              selectedVoucher: cachedMatch?.selectedVoucher || null,
+              usedPoints: cachedMatch?.usedPoints || 0,
+            };
+          });
+        }
+        
         setOrders(pendingOnly);
-        setActiveOrderId(
-          pendingOnly.length
-            ? cached.activeOrderId && pendingOnly.some((o) => o.id === cached.activeOrderId)
-              ? cached.activeOrderId
-              : pendingOnly[0].id
-            : null,
-        );
+        
+        if (pendingOnly.length > 0) {
+          const cachedActiveId = cached?.activeOrderId;
+          if (cachedActiveId && pendingOnly.some((o) => o.id === cachedActiveId)) {
+            setActiveOrderId(cachedActiveId);
+          } else {
+            setActiveOrderId(pendingOnly[0].id);
+          }
+        } else {
+          setActiveOrderId(null);
+        }
+      } catch (err) {
+        console.error("Failed to load pending orders on bootstrap:", err);
       }
 
       loadProducts(0);
@@ -217,9 +225,19 @@ const POSPage = () => {
       message: `Don #${paidOrderId} da thanh toan thanh cong.`,
     });
     setPendingSyncOrderId(null);
+
+    // Refresh inventory products after a successful payment
+    setRefreshKey((prev) => prev + 1);
+    loadProducts(page);
   };
 
-  const closeOrderTab = (orderId) => {
+  const closeOrderTab = async (orderId) => {
+    try {
+      await orderService.cancelOrder(orderId);
+    } catch (err) {
+      console.error("Failed to cancel order on close", err);
+    }
+
     setOrders((prev) => {
       const idx = prev.findIndex((o) => o.id === orderId);
       if (idx < 0) return prev;
@@ -414,6 +432,7 @@ const POSPage = () => {
               page={page}
               totalPages={totalPages}
               onPageChange={loadProducts}
+              refreshKey={refreshKey}
             />
           </div>
 
