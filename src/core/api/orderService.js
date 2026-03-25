@@ -26,6 +26,18 @@ export const orderService = {
     return res.data;
   },
 
+  cancelOrder: async (orderId) => {
+    const res = await axiosClient.put(`${API}/${orderId}/cancel`);
+    return res.data;
+  },
+
+  updateCustomer: async (orderId, customerId) => {
+    const res = await axiosClient.put(`${API}/${orderId}/customer`, null, {
+      params: { customerId }
+    });
+    return res.data;
+  },
+
   createQr: async (orderId) => {
     const res = await axiosClient.post(`${API}/${orderId}/create-qr`);
     return res.data;

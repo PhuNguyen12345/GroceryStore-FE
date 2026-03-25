@@ -149,8 +149,7 @@ export default function CustomerForm({
             {errors.phone ? (
               <div className="text-danger small mt-1">{errors.phone}</div>
             ) : (
-              <Form.Text className="text-muted">Ví dụ: 0987654321 hoặc 84987654321.</Form.Text>
-            )}
+              <div className="text-muted small mt-1">Số điện thoại phải đúng định dạng di động Việt Nam.</div>)}
           </div>
 
           <div>

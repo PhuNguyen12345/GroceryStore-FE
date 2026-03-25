@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Badge, Card, Container, Form, Modal, Table } from "react-bootstrap";
 import { FaEye, FaPlus } from "react-icons/fa";
 import AdminLayout from "@/layouts/AdminLayout";
@@ -245,11 +245,26 @@ export default function TransactionsPage() {
           <Card.Body>
             <Form onSubmit={applyFilter}>
               <div className="row g-2">
-                <div className="col-12 col-md-2"><Form.Select value={filters.transactionType} onChange={(e) => setFilters((p) => ({ ...p, transactionType: e.target.value }))}><option value="">Tất cả loại</option><option value="IMPORT">IMPORT</option><option value="EXPORT">EXPORT</option></Form.Select></div>
-                <div className="col-12 col-md-3"><Form.Control placeholder="Tên kho" value={filters.warehouseName} onChange={(e) => setFilters((p) => ({ ...p, warehouseName: e.target.value }))} /></div>
-                <div className="col-12 col-md-3"><Form.Control placeholder="Tên nhân viên" value={filters.employeeName} onChange={(e) => setFilters((p) => ({ ...p, employeeName: e.target.value }))} /></div>
-                <div className="col-12 col-md-2"><Form.Control type="date" value={filters.fromDate} onChange={(e) => setFilters((p) => ({ ...p, fromDate: e.target.value }))} /></div>
-                <div className="col-12 col-md-2"><Form.Control type="date" value={filters.toDate} onChange={(e) => setFilters((p) => ({ ...p, toDate: e.target.value }))} /></div>
+                <div className="col-12 col-md-2">
+                  <div className="text-muted small mb-1">Loại GD</div>
+                  <Form.Select value={filters.transactionType} onChange={(e) => setFilters((p) => ({ ...p, transactionType: e.target.value }))}><option value="">Tất cả loại</option><option value="IMPORT">IMPORT</option><option value="EXPORT">EXPORT</option></Form.Select>
+                </div>
+                <div className="col-12 col-md-3">
+                  <div className="text-muted small mb-1">Tên kho</div>
+                  <Form.Control placeholder="Tên kho" value={filters.warehouseName} onChange={(e) => setFilters((p) => ({ ...p, warehouseName: e.target.value }))} />
+                </div>
+                <div className="col-12 col-md-3">
+                  <div className="text-muted small mb-1">Nhân viên</div>
+                  <Form.Control placeholder="Tên nhân viên" value={filters.employeeName} onChange={(e) => setFilters((p) => ({ ...p, employeeName: e.target.value }))} />
+                </div>
+                <div className="col-12 col-md-2">
+                  <div className="text-muted small mb-1">Từ ngày</div>
+                  <Form.Control type="date" value={filters.fromDate} onChange={(e) => setFilters((p) => ({ ...p, fromDate: e.target.value }))} />
+                </div>
+                <div className="col-12 col-md-2">
+                  <div className="text-muted small mb-1">Đến ngày</div>
+                  <Form.Control type="date" value={filters.toDate} onChange={(e) => setFilters((p) => ({ ...p, toDate: e.target.value }))} />
+                </div>
                 <div className="col-12 d-flex gap-2 mt-2"><Button type="submit">Lọc</Button><Button type="button" variant="outline" onClick={resetFilter}>Đặt lại</Button></div>
               </div>
             </Form>

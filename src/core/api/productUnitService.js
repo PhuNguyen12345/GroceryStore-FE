@@ -5,8 +5,21 @@ const API_BASE = "/products/units";
 
 export const productUnitService = {
   // Public storefront (used for price lookup)
-  getUnitsByProduct: async (productId) => {
-    const response = await publicApiClient.get(`${API_BASE}/product/${productId}`);
+  getUnitsByProduct: async (productId, page = 0, size = 100) => {
+    const response = await publicApiClient.get(`${API_BASE}/product/${productId}`, {
+      params: { page, size },
+    });
+    const data = response.data;
+    if (Array.isArray(data)) {
+      return data;
+    }
+    return data?.content || [];
+  },
+
+  searchUnitsByProductName: async (productName) => {
+    const response = await publicApiClient.get(`${API_BASE}/search/product`, {
+      params: { productName },
+    });
     return response.data;
   },
 

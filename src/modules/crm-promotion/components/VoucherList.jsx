@@ -39,6 +39,11 @@ function formatCurrencyVnd(value) {
   return vndFormatter.format(Number(value));
 }
 
+function formatDateTime(value) {
+  if (!value) return "-";
+  return new Date(value).toLocaleString("vi-VN");
+}
+
 export default function VoucherList({ vouchers, loading, onEdit, onDelete, onRestore, page = 0, size = 10 }) {
   if (loading && vouchers.length === 0) {
     return (
@@ -85,8 +90,7 @@ export default function VoucherList({ vouchers, loading, onEdit, onDelete, onRes
                 </Badge>
               </td>
               <td>
-                {voucher.startDate ? new Date(voucher.startDate).toLocaleDateString("vi-VN") : "-"} -{" "}
-                {voucher.endDate ? new Date(voucher.endDate).toLocaleDateString("vi-VN") : "-"}
+                {formatDateTime(voucher.startDate)} - {formatDateTime(voucher.endDate)}
               </td>
               <td>
                 <div className="d-flex justify-content-end gap-2">
