@@ -18,6 +18,7 @@ import CustomerPage from "@/modules/crm-promotion/pages/Customer";
 import VoucherPage from "@/modules/crm-promotion/pages/Voucher";
 import LoginPage from "@/modules/auth/pages/LoginPage";
 import StaffPage from "@/modules/hr-shift/pages/Staff";
+import AttendanceCheckinPage from "@/modules/hr-shift/pages/AttendanceCheckin";
 import SuppliersPage from "@/modules/inventory/pages/Suppliers";
 import WarehousesPage from "@/modules/inventory/pages/Warehouses";
 import BatchesPage from "@/modules/inventory/pages/Batches";
@@ -90,6 +91,7 @@ export default function AppRoutes() {
 
       <Route element={<PrivateRoutes allowedRoles={STAFF_ROLES} />}>
         <Route path="/admin/profile" element={<ProfilePage />} />
+        <Route path="/admin/attendance" element={<AttendanceCheckinPage />} />
       </Route>
 
       <Route element={<PrivateRoutes allowedRoles={POS_ROLES} />}>

@@ -15,6 +15,7 @@ import {
   FaListUl,
   FaBullhorn,
   FaUserClock,
+  FaClipboardCheck,
 } from "react-icons/fa";
 
 const ALL_STAFF_ROLES = ["ADMIN", "STORE_MANAGER", "INVENTORY_STAFF", "CASHIER"];
@@ -26,6 +27,7 @@ const ADMIN_ONLY_ROLES = ["ADMIN"];
 
 const navItems = [
   { to: "/orders", icon: FaShoppingCart, label: "Đơn hàng", allowedRoles: POS_ROLES },
+  { to: "/admin/attendance", icon: FaClipboardCheck, label: "Chấm công", allowedRoles: ALL_STAFF_ROLES },
   { to: "/admin/customers", icon: FaUsers, label: "Khách hàng", allowedRoles: CRM_READ_ROLES },
   { to: "/admin/promotions", icon: FaBullhorn, label: "Quảng cáo", allowedRoles: ADMIN_AND_MANAGER_ROLES },
   { to: "/admin/vouchers", icon: FaTag, label: "Khuyến mãi", allowedRoles: CRM_READ_ROLES },

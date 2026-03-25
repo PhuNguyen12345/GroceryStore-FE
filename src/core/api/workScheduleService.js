@@ -29,7 +29,7 @@ export const workScheduleService = {
   },
 
   updateWorkSchedule: async (id, payload) => {
-    const response = await axiosClient.put(`${WORK_SCHEDULE_BASE}/${id}`, payload);
+    const response = await axiosClient.patch(`${WORK_SCHEDULE_BASE}/${id}`, payload);
     return response.data;
   },
 
@@ -44,22 +44,26 @@ export const workScheduleService = {
   },
 
   checkIn: async (id) => {
-    const response = await axiosClient.put(`${WORK_SCHEDULE_BASE}/${id}/check-in`);
+    const response = await axiosClient.patch(`${WORK_SCHEDULE_BASE}/${id}/check-in`, {
+      checkInTime: new Date().toISOString(),
+    });
     return response.data;
   },
 
   checkOut: async (id) => {
-    const response = await axiosClient.put(`${WORK_SCHEDULE_BASE}/${id}/check-out`);
+    const response = await axiosClient.patch(`${WORK_SCHEDULE_BASE}/${id}/check-out`, {
+      checkOutTime: new Date().toISOString(),
+    });
     return response.data;
   },
 
   markPresent: async (id) => {
-    const response = await axiosClient.put(`${WORK_SCHEDULE_BASE}/${id}/present`);
+    const response = await axiosClient.patch(`${WORK_SCHEDULE_BASE}/${id}/mark-present`);
     return response.data;
   },
 
   markAbsent: async (id) => {
-    const response = await axiosClient.put(`${WORK_SCHEDULE_BASE}/${id}/absent`);
+    const response = await axiosClient.patch(`${WORK_SCHEDULE_BASE}/${id}/mark-absent`);
     return response.data;
   },
 

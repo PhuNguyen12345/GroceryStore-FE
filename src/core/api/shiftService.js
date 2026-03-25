@@ -16,17 +16,17 @@ export const shiftService = {
   },
 
   updateShift: async (id, payload) => {
-    const response = await axiosClient.put(`${SHIFT_BASE}/${id}`, payload);
+    const response = await axiosClient.patch(`${SHIFT_BASE}/${id}`, payload);
     return response.data;
   },
 
   deactivateShift: async (id) => {
-    const response = await axiosClient.put(`${SHIFT_BASE}/${id}/deactivate`);
+    const response = await axiosClient.patch(`${SHIFT_BASE}/${id}/deactivate`);
     return response.data;
   },
 
   activateShift: async (id) => {
-    const response = await axiosClient.put(`${SHIFT_BASE}/${id}/activate`);
+    const response = await axiosClient.patch(`${SHIFT_BASE}/${id}/activate`);
     return response.data;
   },
 

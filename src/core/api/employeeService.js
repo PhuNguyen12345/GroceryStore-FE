@@ -26,7 +26,7 @@ export const employeeService = {
   },
 
   updateEmployee: async (id, payload) => {
-    const response = await axiosClient.put(`${EMPLOYEE_BASE}/${id}`, payload);
+    const response = await axiosClient.patch(`${EMPLOYEE_BASE}/${id}`, payload);
     return response.data;
   },
 
@@ -36,12 +36,12 @@ export const employeeService = {
   },
 
   activateEmployee: async (id) => {
-    const response = await axiosClient.put(`${EMPLOYEE_BASE}/${id}/activate`);
+    const response = await axiosClient.patch(`${EMPLOYEE_BASE}/${id}/activate`);
     return response.data;
   },
 
   deactivateEmployee: async (id) => {
-    const response = await axiosClient.put(`${EMPLOYEE_BASE}/${id}/deactivate`);
+    const response = await axiosClient.patch(`${EMPLOYEE_BASE}/${id}/deactivate`);
     return response.data;
   },
 
