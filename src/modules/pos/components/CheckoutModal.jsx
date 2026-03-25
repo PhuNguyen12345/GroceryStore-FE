@@ -99,6 +99,7 @@ const CheckoutModal = ({
         amountPaid: total,
         usedPoints: usedPoints,
         voucherId: voucherId,
+        customerId: customerId,
       });
       finishPayment();
     } catch (err) {
