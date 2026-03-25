@@ -1,8 +1,10 @@
-﻿import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Badge, Card, Container, Form, Table } from "react-bootstrap";
 import AdminLayout from "@/layouts/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { inventoryService } from "@/core/api/inventoryService";
+import { productService } from "@/core/api/productService";
+import { productUnitService } from "@/core/api/productUnitService";
 
 function emptyCheckItem() {
   return { productUnitId: "", requestedQuantity: "" };
@@ -18,6 +20,42 @@ export default function StockPage() {
   const [loadingSingle, setLoadingSingle] = useState(false);
   const [loadingCheck, setLoadingCheck] = useState(false);
   const [error, setError] = useState("");
+
+  const [lookupWarehouses, setLookupWarehouses] = useState([]);
+  const [lookupUnits, setLookupUnits] = useState([]);
+  const [lookupLoading, setLookupLoading] = useState(false);
+
+  const loadLookups = useCallback(async () => {
+    try {
+      setLookupLoading(true);
+      const warehouseRes = await inventoryService.getWarehouses({ page: 0, size: 500 });
+      setLookupWarehouses(warehouseRes.content || []);
+
+      const pageSize = 100;
+      let p = 0;
+      let total = 1;
+      const products = [];
+      while (p < total) {
+        const pageData = await productService.getAllProducts(p, pageSize);
+        products.push(...(Array.isArray(pageData?.content) ? pageData.content : []));
+        total = Number.isFinite(pageData?.totalPages) ? pageData.totalPages : p + 1;
+        p += 1;
+      }
+
+      const unitsByProduct = await Promise.all(products.map(async (product) => {
+        try { return await productUnitService.getUnitsByProduct(product.id); } catch { return []; }
+      }));
+      const mergedUnits = unitsByProduct.flat().filter(Boolean);
+      const uniqueUnits = Array.from(new Map(mergedUnits.map((u) => [u.id, u])).values());
+      setLookupUnits(uniqueUnits);
+    } catch (err) {
+      setError(err?.response?.data?.message || err?.message || "Không thể tải dữ liệu danh mục");
+    } finally {
+      setLookupLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadLookups(); }, [loadLookups]);
 
   const canRunSingle = useMemo(() => Number(singleQuery.warehouseId) > 0 && Number(singleQuery.productUnitId) > 0, [singleQuery]);
 
@@ -81,6 +119,7 @@ export default function StockPage() {
           </div>
         </div>
 
+        {lookupLoading ? <Alert variant="info">Đang tải dữ liệu danh mục...</Alert> : null}
         {error ? <Alert variant="danger" onClose={() => setError("")} dismissible>{error}</Alert> : null}
 
         <div className="row g-4">
@@ -89,8 +128,8 @@ export default function StockPage() {
               <Card.Header className="bg-white border-0"><h6 className="mb-0 fw-semibold">Tồn kho theo đơn vị sản phẩm</h6></Card.Header>
               <Card.Body>
                 <Form onSubmit={runSingle} className="d-grid gap-3">
-                  <Form.Group><Form.Label>ID kho</Form.Label><Form.Control type="number" min={1} value={singleQuery.warehouseId} onChange={(e) => setSingleQuery((p) => ({ ...p, warehouseId: e.target.value }))} /></Form.Group>
-                  <Form.Group><Form.Label>ID đơn vị sản phẩm</Form.Label><Form.Control type="number" min={1} value={singleQuery.productUnitId} onChange={(e) => setSingleQuery((p) => ({ ...p, productUnitId: e.target.value }))} /></Form.Group>
+                  <Form.Group><Form.Label>Kho</Form.Label><Form.Select value={singleQuery.warehouseId} onChange={(e) => setSingleQuery((p) => ({ ...p, warehouseId: e.target.value }))}><option value="">Chọn kho</option>{lookupWarehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}</Form.Select></Form.Group>
+                  <Form.Group><Form.Label>Đơn vị sản phẩm</Form.Label><Form.Select value={singleQuery.productUnitId} onChange={(e) => setSingleQuery((p) => ({ ...p, productUnitId: e.target.value }))}><option value="">Chọn sản phẩm</option>{lookupUnits.map((u) => <option key={u.id} value={u.id}>{u.productName} - {u.unitName}</option>)}</Form.Select></Form.Group>
                   <Button type="submit" disabled={loadingSingle}>{loadingSingle ? "Đang kiểm tra..." : "Kiểm tra tồn"}</Button>
                 </Form>
                 {singleResult !== null ? (<Alert variant="info" className="mt-3 mb-0">Số lượng còn: <strong>{singleResult}</strong></Alert>) : null}
@@ -106,11 +145,11 @@ export default function StockPage() {
               </Card.Header>
               <Card.Body>
                 <Form onSubmit={runCheck}>
-                  <Form.Group className="mb-3"><Form.Label>ID kho</Form.Label><Form.Control type="number" min={1} value={checkForm.warehouseId} onChange={(e) => setCheckForm((p) => ({ ...p, warehouseId: e.target.value }))} /></Form.Group>
+                  <Form.Group className="mb-3"><Form.Label>Kho</Form.Label><Form.Select value={checkForm.warehouseId} onChange={(e) => setCheckForm((p) => ({ ...p, warehouseId: e.target.value }))}><option value="">Chọn kho</option>{lookupWarehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}</Form.Select></Form.Group>
                   <div className="d-grid gap-2 mb-3">
                     {checkForm.items.map((item, index) => (
                       <div key={index} className="d-flex gap-2">
-                        <Form.Control type="number" min={1} placeholder="ID đơn vị SP" value={item.productUnitId} onChange={(e) => updateCheckItem(index, "productUnitId", e.target.value)} />
+                        <Form.Select className="w-50" value={item.productUnitId} onChange={(e) => updateCheckItem(index, "productUnitId", e.target.value)}><option value="">Chọn sản phẩm</option>{lookupUnits.map((u) => <option key={u.id} value={u.id}>{u.productName} - {u.unitName}</option>)}</Form.Select>
                         <Form.Control type="number" min={1} placeholder="Số lượng yêu cầu" value={item.requestedQuantity} onChange={(e) => updateCheckItem(index, "requestedQuantity", e.target.value)} />
                         <Button type="button" variant="destructive" onClick={() => removeCheckItem(index)} disabled={checkForm.items.length <= 1}>Xóa</Button>
                       </div>
@@ -121,7 +160,7 @@ export default function StockPage() {
 
                 {checkResult ? (
                   <div className="mt-3">
-                    <Alert variant={checkResult.isAllAvailable ? "success" : "warning"}>Kết quả: {checkResult.isAllAvailable ? "Đủ hàng toàn bộ" : "Có mặt hàng thiếu tồn"}</Alert>
+                    <Alert variant={checkResult.allAvailable ? "success" : "warning"}>Kết quả: {checkResult.allAvailable ? "Đủ hàng toàn bộ" : "Có mặt hàng thiếu tồn"}</Alert>
                     <div className="table-responsive">
                       <Table hover className="align-middle mb-0 admin-brand-table">
                         <thead><tr><th>ID đơn vị SP</th><th>Sản phẩm</th><th>Đơn vị</th><th>Yêu cầu</th><th>Khả dụng</th><th>Trạng thái</th></tr></thead>
