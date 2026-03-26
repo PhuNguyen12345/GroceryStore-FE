@@ -84,7 +84,13 @@ export function toBooleanFilter(value) {
 // Attendance status calculation
 export function calculateAttendanceStatus(schedule) {
 	// If shift has no start time, use original attendance status
-	const shiftStartTimeStr = schedule.shift?.startTime || schedule.shiftStartTime;
+	const shiftStartTimeStr =
+		schedule.shift?.startTime ||
+		schedule.shift?.start ||
+		schedule.shift?.start_at ||
+		schedule.shiftStartTime ||
+		schedule.shiftStart ||
+		schedule.startTime;
 	const checkInTimeStr = schedule.checkInTime || schedule.checkIn;
 	const isPresent = schedule?.isPresent;
 
@@ -97,7 +103,16 @@ export function calculateAttendanceStatus(schedule) {
 
 	if (!shiftStartTimeStr) {
 		// No shift time to compare, use original status
-		const originalStatus = schedule.isPresent || schedule.status || "PENDING";
+		const originalStatus = schedule.isPresent ?? schedule.status ?? "PENDING";
+		if (originalStatus === "LATE") {
+			return { status: "Muộn", variant: "warning", label: "Late" };
+		}
+		if (originalStatus === "ABSENT") {
+			return { status: "Vắng", variant: "danger", label: "Absent" };
+		}
+		if (originalStatus === "PRESENT") {
+			return { status: "Đúng giờ", variant: "success", label: "On Time" };
+		}
 		return {
 			status: originalStatus === true ? "Đi làm" : originalStatus === false ? "Vắng" : "Chưa xác định",
 			variant: originalStatus === true ? "success" : originalStatus === false ? "danger" : "warning",

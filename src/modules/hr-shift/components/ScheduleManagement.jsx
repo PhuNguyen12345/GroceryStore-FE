@@ -145,14 +145,35 @@ export default function ScheduleManagement() {
         return true;
       });
 
-      setSchedules(filtered);
+      const enriched = filtered.map((item) => {
+        const currentShiftId = item.shiftId || item.shift?.id;
+        const matchedShift = lookupShifts.find(
+          (shift) => String(shift.id) === String(currentShiftId),
+        );
+
+        return {
+          ...item,
+          shiftStart:
+            item.shiftStart ||
+            item.shiftStartTime ||
+            item.shift?.startTime ||
+            matchedShift?.startTime,
+          shiftEnd:
+            item.shiftEnd ||
+            item.shiftEndTime ||
+            item.shift?.endTime ||
+            matchedShift?.endTime,
+        };
+      });
+
+      setSchedules(enriched);
       setTotalPages(normalized.totalPages || 1);
     } catch (err) {
       setError(getErrorMessage(err, "Không thể tải lịch làm việc"));
     } finally {
       setLoading(false);
     }
-  }, [attendanceFilter, dateFilter, employeeFilter, page, shiftFilter]);
+  }, [attendanceFilter, dateFilter, employeeFilter, page, shiftFilter, lookupShifts]);
 
   useEffect(() => {
     loadLookups();

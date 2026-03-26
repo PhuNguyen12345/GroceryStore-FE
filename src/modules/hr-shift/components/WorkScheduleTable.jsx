@@ -9,8 +9,6 @@ export default function WorkScheduleTable({
 	page,
 	onEdit,
 	onDelete,
-	onCheckIn,
-	onCheckOut,
 }) {
 	if (loading && schedules.length === 0) {
 		return (
