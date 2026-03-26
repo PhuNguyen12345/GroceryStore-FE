@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Alert, Badge, Card, Container, Form, Modal, Table } from "react-bootstrap";
+import { useAuthStore } from "@/core/store/useAuthStore";
 import { FaEye, FaPlus } from "react-icons/fa";
 import AdminLayout from "@/layouts/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,15 @@ function emptyExportItem() {
 
 export default function TransactionsPage() {
   const location = useLocation();
+  const user = useAuthStore((state) => state.user);
+  const role = String(useAuthStore((state) => state.role) || "")
+    .trim()
+    .toUpperCase()
+    .replace(/^ROLE_/, "");
+  const currentEmployeeId = user?.employeeId || user?.id || "";
+  const isAdmin = role === "ADMIN";
+  const canCreate = role === "ADMIN" || role === "INVENTORY_STAFF";
+
   const initialFilters = { transactionType: "", warehouseName: "", employeeName: "", fromDate: location.state?.fromDate || "", toDate: location.state?.toDate || "" };
   const [filters, setFilters] = useState(initialFilters);
   const [appliedFilters, setAppliedFilters] = useState(initialFilters);
@@ -107,7 +117,8 @@ export default function TransactionsPage() {
 
       setLookupWarehouses(warehouseRes.content || []);
       setLookupSuppliers(supplierRes.content || []);
-      setLookupEmployees(Array.isArray(employeesRes) ? employeesRes : []);
+      const allEmps = Array.isArray(employeesRes) ? employeesRes : [];
+      setLookupEmployees(allEmps.filter(e => e.role === "ADMIN" || e.role === "INVENTORY_STAFF"));
 
       const pageSize = 100;
       let p = 0;
@@ -157,6 +168,12 @@ export default function TransactionsPage() {
   const openCreateModal = async (mode) => {
     setCreateMode(mode);
     setShowCreate(true);
+    const initialEmployeeId = isAdmin ? "" : String(currentEmployeeId);
+    if (mode === "IMPORT") {
+      setImportForm({ warehouseId: "", supplierId: "", employeeId: initialEmployeeId, note: "", items: [emptyImportItem()] });
+    } else {
+      setExportForm({ warehouseId: "", employeeId: initialEmployeeId, notes: "", items: [emptyExportItem()] });
+    }
     if (lookupWarehouses.length === 0 || lookupSuppliers.length === 0 || lookupEmployees.length === 0 || lookupUnits.length === 0) {
       await loadLookups();
     }
@@ -216,8 +233,9 @@ export default function TransactionsPage() {
       }
 
       setShowCreate(false);
-      setImportForm({ warehouseId: "", supplierId: "", employeeId: "", note: "", items: [emptyImportItem()] });
-      setExportForm({ warehouseId: "", employeeId: "", notes: "", items: [emptyExportItem()] });
+      const initialEmployeeId = isAdmin ? "" : String(currentEmployeeId);
+      setImportForm({ warehouseId: "", supplierId: "", employeeId: initialEmployeeId, note: "", items: [emptyImportItem()] });
+      setExportForm({ warehouseId: "", employeeId: initialEmployeeId, notes: "", items: [emptyExportItem()] });
       await loadTransactions();
       setTimeout(() => setSuccess(""), 2000);
     } catch (err) {
@@ -236,8 +254,12 @@ export default function TransactionsPage() {
             <p className="text-muted mb-0">Theo dõi và tạo phiếu nhập xuất kho.</p>
           </div>
           <div className="d-flex gap-2">
-            <Button onClick={() => openCreateModal("IMPORT")} className="admin-add-btn d-flex align-items-center gap-2"><span className="admin-add-btn-icon d-inline-flex"><FaPlus size={12} /></span><span>Tạo phiếu nhập</span></Button>
-            <Button variant="outline" onClick={() => openCreateModal("EXPORT")} className="d-flex align-items-center gap-2"><span className="admin-add-btn-icon d-inline-flex"><FaPlus size={12} /></span><span>Tạo phiếu xuất</span></Button>
+            {canCreate ? (
+              <>
+                <Button onClick={() => openCreateModal("IMPORT")} className="admin-add-btn d-flex align-items-center gap-2"><span className="admin-add-btn-icon d-inline-flex"><FaPlus size={12} /></span><span>Tạo phiếu nhập</span></Button>
+                <Button variant="outline" onClick={() => openCreateModal("EXPORT")} className="d-flex align-items-center gap-2"><span className="admin-add-btn-icon d-inline-flex"><FaPlus size={12} /></span><span>Tạo phiếu xuất</span></Button>
+              </>
+            ) : null}
           </div>
         </div>
 
@@ -346,7 +368,7 @@ export default function TransactionsPage() {
                 <div className="row g-2">
                   <div className="col-md-4"><Form.Label>Kho</Form.Label><Form.Select value={importForm.warehouseId} onChange={(e) => setImportForm((p) => ({ ...p, warehouseId: e.target.value }))} required><option value="">Chọn kho</option>{lookupWarehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}</Form.Select></div>
                   <div className="col-md-4"><Form.Label>Nhà cung cấp</Form.Label><Form.Select value={importForm.supplierId} onChange={(e) => setImportForm((p) => ({ ...p, supplierId: e.target.value }))} required><option value="">Chọn nhà cung cấp</option>{lookupSuppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</Form.Select></div>
-                  <div className="col-md-4"><Form.Label>Nhân viên</Form.Label><Form.Select value={importForm.employeeId} onChange={(e) => setImportForm((p) => ({ ...p, employeeId: e.target.value }))} required><option value="">Chọn nhân viên</option>{lookupEmployees.map((e) => <option key={e.id} value={e.id}>{e.fullName || e.username || `Nhân viên ${e.id}`}</option>)}</Form.Select></div>
+                  <div className="col-md-4"><Form.Label>Nhân viên</Form.Label><Form.Select value={importForm.employeeId} onChange={(e) => setImportForm((p) => ({ ...p, employeeId: e.target.value }))} required disabled={!isAdmin}><option value="">Chọn nhân viên</option>{lookupEmployees.map((e) => <option key={e.id} value={e.id}>{e.fullName || e.username || `Nhân viên ${e.id}`}</option>)}</Form.Select></div>
                 </div>
                 <Form.Group><Form.Label>Ghi chú</Form.Label><Form.Control value={importForm.note} onChange={(e) => setImportForm((p) => ({ ...p, note: e.target.value }))} /></Form.Group>
                 <div className="d-flex justify-content-between align-items-center"><h6 className="mb-0">Danh sách hàng</h6><Button type="button" variant="outline" onClick={addImportItem}>Thêm dòng</Button></div>
@@ -364,7 +386,7 @@ export default function TransactionsPage() {
               <div className="d-grid gap-3">
                 <div className="row g-2">
                   <div className="col-md-6"><Form.Label>Kho</Form.Label><Form.Select value={exportForm.warehouseId} onChange={(e) => setExportForm((p) => ({ ...p, warehouseId: e.target.value }))} required><option value="">Chọn kho</option>{lookupWarehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}</Form.Select></div>
-                  <div className="col-md-6"><Form.Label>Nhân viên</Form.Label><Form.Select value={exportForm.employeeId} onChange={(e) => setExportForm((p) => ({ ...p, employeeId: e.target.value }))} required><option value="">Chọn nhân viên</option>{lookupEmployees.map((e) => <option key={e.id} value={e.id}>{e.fullName || e.username || `Nhân viên ${e.id}`}</option>)}</Form.Select></div>
+                  <div className="col-md-6"><Form.Label>Nhân viên</Form.Label><Form.Select value={exportForm.employeeId} onChange={(e) => setExportForm((p) => ({ ...p, employeeId: e.target.value }))} required disabled={!isAdmin}><option value="">Chọn nhân viên</option>{lookupEmployees.map((e) => <option key={e.id} value={e.id}>{e.fullName || e.username || `Nhân viên ${e.id}`}</option>)}</Form.Select></div>
                 </div>
                 <Form.Group><Form.Label>Ghi chú</Form.Label><Form.Control value={exportForm.notes} onChange={(e) => setExportForm((p) => ({ ...p, notes: e.target.value }))} /></Form.Group>
                 <div className="d-flex justify-content-between align-items-center"><h6 className="mb-0">Danh sách hàng</h6><Button type="button" variant="outline" onClick={addExportItem}>Thêm dòng</Button></div>
