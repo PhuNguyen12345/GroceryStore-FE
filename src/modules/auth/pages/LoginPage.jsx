@@ -1,6 +1,9 @@
 ﻿import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Building2, CircleHelp, LockKeyhole, ShieldCheck } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import LoginForm from "@/modules/auth/components/LoginForm";
 import { authService } from "@/core/api/authService";
 import { ALLOWED_STAFF_ROLES, useAuthStore } from "@/core/store/useAuthStore";
@@ -13,6 +16,15 @@ const ROLE_LANDING_PATH = {
 	CASHIER: "/orders",
 };
 
+const forgotPasswordSchema = z.object({
+	username: z.string().trim().min(1, "Vui lòng nhập tên đăng nhập"),
+	email: z
+		.string()
+		.trim()
+		.min(1, "Vui lòng nhập email công việc")
+		.email("Email không đúng định dạng"),
+});
+
 export default function LoginPage() {
 	const navigate = useNavigate();
 	const loginSuccess = useAuthStore((state) => state.loginSuccess);
@@ -21,8 +33,19 @@ export default function LoginPage() {
 	const [isForgotMode, setIsForgotMode] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
 	const [forgotMessage, setForgotMessage] = useState("");
-	const [forgotUsername, setForgotUsername] = useState("");
-	const [forgotEmail, setForgotEmail] = useState("");
+
+	const {
+		register: registerForgot,
+		handleSubmit: handleSubmitForgot,
+		reset: resetForgotForm,
+		formState: { errors: forgotErrors },
+	} = useForm({
+		resolver: zodResolver(forgotPasswordSchema),
+		defaultValues: {
+			username: "",
+			email: "",
+		},
+	});
 
 	const handleLogin = async (values) => {
 		try {
@@ -54,28 +77,19 @@ export default function LoginPage() {
 		}
 	};
 
-	const handleForgotPassword = async (event) => {
-		event.preventDefault();
-
-		if (!forgotUsername.trim() || !forgotEmail.trim()) {
-			setForgotMessage("Vui lòng nhập tên đăng nhập và email công việc.");
-			return;
-		}
-
+	const handleForgotPassword = async (values) => {
 		try {
 			setForgotMessage("");
 			setIsForgotSubmitting(true);
 
-			const result = await authService.forgotPassword({
-				username: forgotUsername.trim(),
-				email: forgotEmail.trim(),
-			});
+			const result = await authService.forgotPassword(values);
 
 			setForgotMessage(result.message);
+			resetForgotForm();
 		} catch (error) {
 			setForgotMessage(
 				error?.response?.data?.message ||
-					"Không gửi được yêu cầu đặt lại mật khẩu. Vui lòng liên hệ admin để được hỗ trợ."
+					"Không gửi được yêu cầu đặt lại mật khẩu. Vui lòng kiểm tra lại thông tin."
 			);
 		} finally {
 			setIsForgotSubmitting(false);
@@ -129,13 +143,17 @@ export default function LoginPage() {
 									onForgotPassword={() => {
 										setIsForgotMode((prev) => !prev);
 										setForgotMessage("");
+										resetForgotForm();
 									}}
 									isSubmitting={isSubmitting}
 									errorMessage={errorMessage}
 								/>
 
 								{isForgotMode ? (
-									<form className="auth-forgot-panel mt-3" onSubmit={handleForgotPassword}>
+									<form
+										className="auth-forgot-panel mt-3"
+										onSubmit={handleSubmitForgot(handleForgotPassword)}
+									>
 										<h6 className="fw-bold mb-2">Yêu cầu đặt lại mật khẩu</h6>
 										<p className="text-secondary mb-3">
 											Nhập thông tin đã đăng ký với admin. Yêu cầu sẽ được xác nhận trước khi cấp mật
@@ -150,10 +168,13 @@ export default function LoginPage() {
 												<input
 													id="forgot-username"
 													className="form-control"
-													value={forgotUsername}
-													onChange={(event) => setForgotUsername(event.target.value)}
+														autoComplete="username"
 													placeholder="Ví dụ: cashier.nguyen"
+														{...registerForgot("username")}
 												/>
+													{forgotErrors.username ? (
+														<small className="text-danger">{forgotErrors.username.message}</small>
+													) : null}
 											</div>
 											<div className="col-12">
 												<label htmlFor="forgot-email" className="form-label fw-semibold mb-1">
@@ -163,10 +184,13 @@ export default function LoginPage() {
 													id="forgot-email"
 													type="email"
 													className="form-control"
-													value={forgotEmail}
-													onChange={(event) => setForgotEmail(event.target.value)}
+														autoComplete="email"
 													placeholder="staff@grocerystore.vn"
+														{...registerForgot("email")}
 												/>
+													{forgotErrors.email ? (
+														<small className="text-danger">{forgotErrors.email.message}</small>
+													) : null}
 											</div>
 										</div>
 

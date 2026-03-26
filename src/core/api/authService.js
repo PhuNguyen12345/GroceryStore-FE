@@ -34,12 +34,11 @@ export const authService = {
   },
 
   async forgotPassword(payload) {
-    const response = await axiosClient.post("/auth/forgot-password", payload);
+    await axiosClient.post("/auth/forgot-password", payload);
 
     return {
-      message:
-        response.data?.message ||
-        "Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email đã đăng ký.",
+      success: true,
+      message: "Yêu cầu đặt lại mật khẩu đã được gửi cho quản trị viên.",
     };
   },
 };
