@@ -25,7 +25,8 @@ const CRM_READ_ROLES = ["ADMIN", "STORE_MANAGER", "CASHIER"];
 const ADMIN_ONLY_ROLES = ["ADMIN"];
 
 const navItems = [
-  { to: "/orders", icon: FaShoppingCart, label: "Đơn hàng", allowedRoles: POS_ROLES },
+  { to: "/admin/orders", icon: FaShoppingCart, label: "Quản lý đơn hàng", allowedRoles: ADMIN_AND_MANAGER_ROLES },
+  { to: "/orders", icon: FaShoppingCart, label: "Bán hàng POS", allowedRoles: POS_ROLES },
   { to: "/admin/customers", icon: FaUsers, label: "Khách hàng", allowedRoles: CRM_READ_ROLES },
   { to: "/admin/promotions", icon: FaBullhorn, label: "Quảng cáo", allowedRoles: ADMIN_AND_MANAGER_ROLES },
   { to: "/admin/vouchers", icon: FaTag, label: "Khuyến mãi", allowedRoles: CRM_READ_ROLES },

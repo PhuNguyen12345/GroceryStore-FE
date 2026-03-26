@@ -26,7 +26,7 @@ export const employeeService = {
   },
 
   updateEmployee: async (id, payload) => {
-    const response = await axiosClient.put(`${EMPLOYEE_BASE}/${id}`, payload);
+    const response = await axiosClient.patch(`${EMPLOYEE_BASE}/${id}`, payload);
     return response.data;
   },
 
@@ -36,12 +36,12 @@ export const employeeService = {
   },
 
   activateEmployee: async (id) => {
-    const response = await axiosClient.put(`${EMPLOYEE_BASE}/${id}/activate`);
+    const response = await axiosClient.patch(`${EMPLOYEE_BASE}/${id}/activate`);
     return response.data;
   },
 
   deactivateEmployee: async (id) => {
-    const response = await axiosClient.put(`${EMPLOYEE_BASE}/${id}/deactivate`);
+    const response = await axiosClient.patch(`${EMPLOYEE_BASE}/${id}/deactivate`);
     return response.data;
   },
 
@@ -58,19 +58,19 @@ export const employeeService = {
   },
 
   findByRole: async (role, page = 0, size = 10) => {
-    const response = await axiosClient.get(`${EMPLOYEE_BASE}/search/role`, {
-      params: { role, ...toPageParams(page, size) },
+    const response = await axiosClient.get(`${EMPLOYEE_BASE}/role/${role}`, {
+      params: { ...toPageParams(page, size) },
     });
     return response.data;
   },
 
   countByRole: async (role) => {
-    const response = await axiosClient.get(`${EMPLOYEE_BASE}/count/role`, { params: { role } });
-    return response.data;
+    const response = await axiosClient.get(`${EMPLOYEE_BASE}/stats`);
+    return Number(response.data?.countByRole?.[role] || 0);
   },
 
   countActive: async () => {
-    const response = await axiosClient.get(`${EMPLOYEE_BASE}/count/active`);
-    return response.data;
+    const response = await axiosClient.get(`${EMPLOYEE_BASE}/stats`);
+    return Number(response.data?.totalActive || 0);
   },
 };

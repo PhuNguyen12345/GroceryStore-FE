@@ -48,6 +48,11 @@ export const orderService = {
     return res.data;
   },
 
+  getAdminOrders: async (params = {}) => {
+    const res = await axiosClient.get(`${API}/admin`, { params });
+    return res.data;
+  },
+
   getOrderById: async (orderId) => {
     const res = await axiosClient.get(`${API}/${orderId}`);
     return res.data;

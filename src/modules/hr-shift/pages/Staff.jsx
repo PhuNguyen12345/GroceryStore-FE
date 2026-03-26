@@ -94,6 +94,12 @@ function formatDateTime(dateValue) {
 	return date.toLocaleString("vi-VN");
 }
 
+function formatCurrency(value) {
+	const amount = Number(value);
+	if (!Number.isFinite(amount)) return "-";
+	return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+}
+
 function normalizeTime(time = "") {
 	const value = String(time || "").trim();
 	if (!value) return "";
@@ -232,7 +238,18 @@ function EmployeeTable({ employees, loading, page, onEdit, onToggleActive, onDel
 	);
 }
 
-function WorkScheduleTable({ schedules, loading, page, onEdit, onDelete, onCheckIn, onCheckOut, onPresent, onAbsent }) {
+function WorkScheduleTable({
+	schedules,
+	loading,
+	page,
+	onEdit,
+	onDelete,
+	onCheckIn,
+	onCheckOut,
+	onPresent,
+	onAbsent,
+	onUpdateOpeningCash,
+}) {
 	if (loading && schedules.length === 0) {
 		return (
 			<div className="text-center py-5">
@@ -256,22 +273,30 @@ function WorkScheduleTable({ schedules, loading, page, onEdit, onDelete, onCheck
 						<th>Ca làm</th>
 						<th>Check in</th>
 						<th>Check out</th>
+						<th>Tiền đầu ca</th>
+						<th>Tiền cuối ca</th>
 						<th>Điểm danh</th>
 						<th className="text-end">Thao tác</th>
 					</tr>
 				</thead>
 				<tbody>
 					{schedules.map((schedule, index) => {
-						const attendanceStatus = schedule.attendanceStatus || schedule.status || "PENDING";
+						const attendanceStatus = schedule.isPresent === true
+							? "PRESENT"
+							: schedule.isPresent === false
+								? "ABSENT"
+								: (schedule.attendanceStatus || schedule.status || "PENDING");
 
 						return (
 							<tr key={schedule.id}>
 								<td>{page * PAGE_SIZE + index + 1}</td>
 								<td>{formatDate(schedule.workDate || schedule.date)}</td>
-								<td>{schedule.employeeName || schedule.employee?.fullName || "-"}</td>
+								<td>{schedule.employeeFullName || schedule.employeeName || schedule.employee?.fullName || "-"}</td>
 								<td>{schedule.shiftName || schedule.shift?.name || "-"}</td>
 								<td>{formatDateTime(schedule.checkInTime)}</td>
 								<td>{formatDateTime(schedule.checkOutTime)}</td>
+								<td>{formatCurrency(schedule.openingCash)}</td>
+								<td>{formatCurrency(schedule.closingCash)}</td>
 								<td>
 									<Badge bg={attendanceStatus === "PRESENT" ? "success" : attendanceStatus === "ABSENT" ? "danger" : "warning"}>
 										{attendanceStatus}
@@ -285,7 +310,10 @@ function WorkScheduleTable({ schedules, loading, page, onEdit, onDelete, onCheck
 										<Button variant="secondary" size="icon-sm" title="Check in" onClick={() => onCheckIn(schedule.id)}>
 											<FaClock />
 										</Button>
-										<Button variant="secondary" size="icon-sm" title="Check out" onClick={() => onCheckOut(schedule.id)}>
+										<Button variant="outline" size="icon-sm" title="Tiền đầu ca" onClick={() => onUpdateOpeningCash(schedule)}>
+											đ
+										</Button>
+										<Button variant="secondary" size="icon-sm" title="Check out + tiền cuối ca" onClick={() => onCheckOut(schedule)}>
 											<FaCalendarAlt />
 										</Button>
 										<Button variant="outline" size="icon-sm" title="Đi làm" onClick={() => onPresent(schedule.id)}>
@@ -419,10 +447,17 @@ export default function StaffPage() {
 	const [showScheduleModal, setShowScheduleModal] = useState(false);
 	const [editingSchedule, setEditingSchedule] = useState(null);
 	const [scheduleDeleteId, setScheduleDeleteId] = useState(null);
+	const [showClosingCashModal, setShowClosingCashModal] = useState(false);
+	const [closingCashValue, setClosingCashValue] = useState("");
+	const [closingCashSchedule, setClosingCashSchedule] = useState(null);
+	const [showOpeningCashModal, setShowOpeningCashModal] = useState(false);
+	const [openingCashValue, setOpeningCashValue] = useState("");
+	const [openingCashSchedule, setOpeningCashSchedule] = useState(null);
 	const [scheduleForm, setScheduleForm] = useState({
 		employeeId: "",
 		shiftId: "",
 		workDate: "",
+		openingCash: "",
 		notes: "",
 	});
 	const [selectedDateCounts, setSelectedDateCounts] = useState({ total: 0, present: 0, absent: 0 });
@@ -651,7 +686,11 @@ export default function StaffPage() {
 					return false;
 				}
 
-				const attendance = item.attendanceStatus || item.status || "PENDING";
+				const attendance = item.isPresent === true
+					? "PRESENT"
+					: item.isPresent === false
+						? "ABSENT"
+						: (item.attendanceStatus || item.status || "PENDING");
 				if (scheduleAttendanceFilter !== "all" && attendance !== scheduleAttendanceFilter) {
 					return false;
 				}
@@ -726,6 +765,7 @@ export default function StaffPage() {
 			employeeId: String(schedule?.employeeId || schedule?.employee?.id || ""),
 			shiftId: String(schedule?.shiftId || schedule?.shift?.id || ""),
 			workDate: String(schedule?.workDate || schedule?.date || "").slice(0, 10),
+			openingCash: schedule?.openingCash ?? "",
 			notes: schedule?.notes || "",
 		});
 		setShowScheduleModal(true);
@@ -884,6 +924,10 @@ export default function StaffPage() {
 				employeeId: Number(scheduleForm.employeeId),
 				shiftId: Number(scheduleForm.shiftId),
 				workDate: scheduleForm.workDate,
+				openingCash:
+					scheduleForm.openingCash === "" || scheduleForm.openingCash === null
+						? null
+						: Number(scheduleForm.openingCash),
 				notes: scheduleForm.notes.trim(),
 			};
 
@@ -919,6 +963,59 @@ export default function StaffPage() {
 			clearToastAfter(setScheduleSuccess);
 		} catch (err) {
 			setScheduleError(getErrorMessage(err, "Không thể xóa lịch làm việc"));
+		}
+	};
+
+	const openClosingCashModal = (schedule) => {
+		setClosingCashSchedule(schedule);
+		setClosingCashValue(schedule?.closingCash ?? "");
+		setShowClosingCashModal(true);
+	};
+
+	const openOpeningCashModal = (schedule) => {
+		setOpeningCashSchedule(schedule);
+		setOpeningCashValue(schedule?.openingCash ?? "");
+		setShowOpeningCashModal(true);
+	};
+
+	const handleConfirmClosingCash = async () => {
+		if (!closingCashSchedule?.id) return;
+		if (closingCashValue === "" || Number.isNaN(Number(closingCashValue))) {
+			setScheduleError("Vui lòng nhập tiền cuối ca hợp lệ trước khi kết ca");
+			return;
+		}
+
+		try {
+			await workScheduleService.checkOut(closingCashSchedule.id, Number(closingCashValue));
+			setShowClosingCashModal(false);
+			setClosingCashSchedule(null);
+			setClosingCashValue("");
+			setScheduleSuccess("Đã kết ca và cập nhật tiền cuối ca");
+			await loadSchedules();
+			await loadSelectedDateCounts();
+			clearToastAfter(setScheduleSuccess);
+		} catch (err) {
+			setScheduleError(getErrorMessage(err, "Không thể kết ca, vui lòng kiểm tra tiền cuối ca"));
+		}
+	};
+
+	const handleConfirmOpeningCash = async () => {
+		if (!openingCashSchedule?.id) return;
+		if (openingCashValue === "" || Number.isNaN(Number(openingCashValue))) {
+			setScheduleError("Vui lòng nhập tiền đầu ca hợp lệ");
+			return;
+		}
+
+		try {
+			await workScheduleService.updateOpeningCash(openingCashSchedule.id, Number(openingCashValue));
+			setShowOpeningCashModal(false);
+			setOpeningCashSchedule(null);
+			setOpeningCashValue("");
+			setScheduleSuccess("Đã cập nhật tiền đầu ca");
+			await loadSchedules();
+			clearToastAfter(setScheduleSuccess);
+		} catch (err) {
+			setScheduleError(getErrorMessage(err, "Không thể cập nhật tiền đầu ca"));
 		}
 	};
 
@@ -1301,7 +1398,8 @@ export default function StaffPage() {
 									onEdit={openScheduleModal}
 									onDelete={setScheduleDeleteId}
 									onCheckIn={(id) => handleScheduleAction(() => workScheduleService.checkIn(id), "Check-in thành công")}
-									onCheckOut={(id) => handleScheduleAction(() => workScheduleService.checkOut(id), "Check-out thành công")}
+									onCheckOut={openClosingCashModal}
+									onUpdateOpeningCash={openOpeningCashModal}
 									onPresent={(id) => handleScheduleAction(() => workScheduleService.markPresent(id), "Đã đánh dấu đi làm")}
 									onAbsent={(id) => handleScheduleAction(() => workScheduleService.markAbsent(id), "Đã đánh dấu vắng")}
 								/>
@@ -1456,6 +1554,17 @@ export default function StaffPage() {
 						/>
 					</div>
 					<div>
+						<label className="form-label">Tiền đầu ca</label>
+						<Input
+							type="number"
+							min="0"
+							step="1000"
+							value={scheduleForm.openingCash}
+							onChange={(event) => setScheduleForm((prev) => ({ ...prev, openingCash: event.target.value }))}
+							placeholder="Ví dụ: 1000000"
+						/>
+					</div>
+					<div>
 						<label className="form-label">Ghi chú</label>
 						<Form.Control
 							as="textarea"
@@ -1475,6 +1584,48 @@ export default function StaffPage() {
 				<Modal.Footer>
 					<Button variant="outline" onClick={() => setShowScheduleModal(false)}>Hủy</Button>
 					<Button onClick={handleSaveSchedule}>Lưu</Button>
+				</Modal.Footer>
+			</Modal>
+
+			<Modal show={showOpeningCashModal} onHide={() => setShowOpeningCashModal(false)} centered>
+				<Modal.Header closeButton>
+					<Modal.Title>Cập nhật tiền đầu ca</Modal.Title>
+				</Modal.Header>
+				<Modal.Body>
+					<label className="form-label">Tiền đầu ca</label>
+					<Input
+						type="number"
+						min="0"
+						step="1000"
+						value={openingCashValue}
+						onChange={(event) => setOpeningCashValue(event.target.value)}
+						placeholder="Nhập tiền đầu ca"
+					/>
+				</Modal.Body>
+				<Modal.Footer>
+					<Button variant="outline" onClick={() => setShowOpeningCashModal(false)}>Hủy</Button>
+					<Button onClick={handleConfirmOpeningCash}>Xác nhận</Button>
+				</Modal.Footer>
+			</Modal>
+
+			<Modal show={showClosingCashModal} onHide={() => setShowClosingCashModal(false)} centered>
+				<Modal.Header closeButton>
+					<Modal.Title>Kết ca và giao ca</Modal.Title>
+				</Modal.Header>
+				<Modal.Body>
+					<label className="form-label">Tiền cuối ca (bắt buộc)</label>
+					<Input
+						type="number"
+						min="0"
+						step="1000"
+						value={closingCashValue}
+						onChange={(event) => setClosingCashValue(event.target.value)}
+						placeholder="Nhập tiền cuối ca"
+					/>
+				</Modal.Body>
+				<Modal.Footer>
+					<Button variant="outline" onClick={() => setShowClosingCashModal(false)}>Hủy</Button>
+					<Button onClick={handleConfirmClosingCash}>Xác nhận kết ca</Button>
 				</Modal.Footer>
 			</Modal>
 
