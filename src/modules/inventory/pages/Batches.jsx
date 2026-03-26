@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Alert, Badge, Card, Container, Form, Table } from "react-bootstrap";
 import AdminLayout from "@/layouts/AdminLayout";
 import { Input } from "@/components/ui/input";
@@ -36,8 +37,10 @@ function formatDate(input) {
 }
 
 export default function BatchesPage() {
-  const [filters, setFilters] = useState({ batchCode: "", productName: "", warehouseName: "", supplierName: "", fromExpiryDate: "", toExpiryDate: "" });
-  const [appliedFilters, setAppliedFilters] = useState(filters);
+  const location = useLocation();
+  const initialFilters = { batchCode: "", productName: "", warehouseName: "", supplierName: "", fromExpiryDate: location.state?.fromExpiryDate || "", toExpiryDate: location.state?.toExpiryDate || "" };
+  const [filters, setFilters] = useState(initialFilters);
+  const [appliedFilters, setAppliedFilters] = useState(initialFilters);
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
