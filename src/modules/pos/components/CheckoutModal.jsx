@@ -69,7 +69,14 @@ const CheckoutModal = ({
       setQrUrl(null);
       setCheckoutUrl(null);
 
-      const res = await orderService.createQr(orderId);
+      const payload = {
+        amountPaid: total,
+        usedPoints: usedPoints,
+        voucherId: voucherId,
+        customerId: customerId,
+        paymentMethod: "QR_CODE",
+      };
+      const res = await orderService.createQr(orderId, payload);
       const nextQrUrl = res?.qrUrl || null;
       const nextCheckoutUrl = res?.checkoutUrl || null;
       setQrUrl(nextQrUrl);
