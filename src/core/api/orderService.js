@@ -38,8 +38,8 @@ export const orderService = {
     return res.data;
   },
 
-  createQr: async (orderId) => {
-    const res = await axiosClient.post(`${API}/${orderId}/create-qr`);
+  createQr: async (orderId, payload = {}) => {
+    const res = await axiosClient.post(`${API}/${orderId}/create-qr`, payload);
     return res.data;
   },
 
