@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Navbar, Container, Nav, Dropdown, Spinner, Modal, Badge } from "react-bootstrap";
 import { FaUser, FaBell, FaCog, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -153,6 +153,7 @@ export default function AdminHeader() {
             priority: "high",
             text: `Có ${expiringSoonTotal} lô hàng sắp hết hạn trong 30 ngày.`,
             path: "/admin/inventory/batches",
+            navState: { fromExpiryDate: todayText, toExpiryDate: in30DaysText },
           });
         }
 
@@ -162,6 +163,7 @@ export default function AdminHeader() {
             priority: "medium",
             text: `Hôm nay có ${transactionsToday} giao dịch kho mới.`,
             path: "/admin/inventory/transactions",
+            navState: { fromDate: todayText, toDate: todayText },
           });
         }
 
@@ -226,7 +228,7 @@ export default function AdminHeader() {
 
   const handleOpenNotification = (item) => {
     markAsRead(item.id);
-    navigate(item.path);
+    navigate(item.path, { state: item.navState });
   };
 
   return (

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Alert, Badge, Card, Container, Form, Modal, Table } from "react-bootstrap";
 import { FaEye, FaPlus } from "react-icons/fa";
 import AdminLayout from "@/layouts/AdminLayout";
@@ -47,8 +48,10 @@ function emptyExportItem() {
 }
 
 export default function TransactionsPage() {
-  const [filters, setFilters] = useState({ transactionType: "", warehouseName: "", employeeName: "", fromDate: "", toDate: "" });
-  const [appliedFilters, setAppliedFilters] = useState(filters);
+  const location = useLocation();
+  const initialFilters = { transactionType: "", warehouseName: "", employeeName: "", fromDate: location.state?.fromDate || "", toDate: location.state?.toDate || "" };
+  const [filters, setFilters] = useState(initialFilters);
+  const [appliedFilters, setAppliedFilters] = useState(initialFilters);
 
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(0);
@@ -352,7 +355,7 @@ export default function TransactionsPage() {
                     <div className="col-md-4"><Form.Select value={item.productUnitId} onChange={(e) => updateImportItem(index, "productUnitId", e.target.value)} required><option value="">Chọn đơn vị sản phẩm</option>{lookupUnits.map((u) => <option key={u.id} value={u.id}>{u.productName} - {u.unitName}</option>)}</Form.Select></div>
                     <div className="col-md-2"><Form.Control type="number" min={1} placeholder="SL" value={item.quantity} onChange={(e) => updateImportItem(index, "quantity", e.target.value)} required /></div>
                     <div className="col-md-2"><Form.Control type="number" min={0} step="0.01" placeholder="Giá nhập" value={item.importPrice} onChange={(e) => updateImportItem(index, "importPrice", e.target.value)} required /></div>
-                    <div className="col-md-3"><Form.Control type="date" value={item.expiryDate} onChange={(e) => updateImportItem(index, "expiryDate", e.target.value)} /></div>
+                    <div className="col-md-3"><Form.Control type={item.expiryDate ? "date" : "text"} onFocus={(e) => (e.target.type = "date")} onBlur={(e) => (e.target.type = item.expiryDate ? "date" : "text")} placeholder="Hạn sử dụng" value={item.expiryDate} onChange={(e) => updateImportItem(index, "expiryDate", e.target.value)} /></div>
                     <div className="col-md-1"><Button type="button" variant="destructive" onClick={() => removeImportItem(index)} disabled={importForm.items.length <= 1}>X</Button></div>
                   </div>
                 ))}
