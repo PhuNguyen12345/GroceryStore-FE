@@ -38,34 +38,38 @@ export const shiftService = {
   },
 
   existByName: async (name) => {
-    const response = await axiosClient.get(`${SHIFT_BASE}/exists/by-name`, { params: { name } });
-    return response.data;
+    try {
+      await axiosClient.get(`${SHIFT_BASE}/name/${encodeURIComponent(name)}`);
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   findByIsActive: async (isActive, page = 0, size = 10) => {
-    const response = await axiosClient.get(`${SHIFT_BASE}/search/active`, {
-      params: { isActive, ...toPageParams(page, size) },
+    const response = await axiosClient.get(`${SHIFT_BASE}/active`, {
+      params: { status: isActive, ...toPageParams(page, size) },
     });
     return response.data;
   },
 
   findByNameContainingIgnoreCase: async (keyword, page = 0, size = 10) => {
-    const response = await axiosClient.get(`${SHIFT_BASE}/search/contains`, {
+    const response = await axiosClient.get(`${SHIFT_BASE}/search`, {
       params: { keyword, ...toPageParams(page, size) },
     });
     return response.data;
   },
 
   findByStartTimeGreaterThanEqual: async (startTime, page = 0, size = 10) => {
-    const response = await axiosClient.get(`${SHIFT_BASE}/search/start-time-gte`, {
-      params: { startTime, ...toPageParams(page, size) },
+    const response = await axiosClient.get(`${SHIFT_BASE}/starting-from`, {
+      params: { time: startTime, ...toPageParams(page, size) },
     });
     return response.data;
   },
 
   findByEndTimeLessThanEqual: async (endTime, page = 0, size = 10) => {
-    const response = await axiosClient.get(`${SHIFT_BASE}/search/end-time-lte`, {
-      params: { endTime, ...toPageParams(page, size) },
+    const response = await axiosClient.get(`${SHIFT_BASE}/ending-before`, {
+      params: { time: endTime, ...toPageParams(page, size) },
     });
     return response.data;
   },
@@ -78,14 +82,20 @@ export const shiftService = {
   },
 
   findByTimeWithin: async (time, page = 0, size = 10) => {
-    const response = await axiosClient.get(`${SHIFT_BASE}/search/time-within`, {
+    const response = await axiosClient.get(`${SHIFT_BASE}/active-at`, {
       params: { time, ...toPageParams(page, size) },
     });
     return response.data;
   },
 
   countByIsActive: async (isActive) => {
-    const response = await axiosClient.get(`${SHIFT_BASE}/count/active`, { params: { isActive } });
-    return response.data;
+    const [statsRes, allRes] = await Promise.all([
+      axiosClient.get(`${SHIFT_BASE}/stats`),
+      axiosClient.get(SHIFT_BASE),
+    ]);
+    const totalActive = Number(statsRes.data?.totalActive || 0);
+    if (isActive) return totalActive;
+    const total = Array.isArray(allRes.data) ? allRes.data.length : totalActive;
+    return Math.max(total - totalActive, 0);
   },
 };

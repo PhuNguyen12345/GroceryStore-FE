@@ -30,6 +30,7 @@ import SettingsPage from "@/modules/settings/pages/Settings";
 import ProfilePage from "@/modules/profile/pages/Profile";
 import PrivateRoutes from "@/core/routes/PrivateRoutes";
 import POSPage from '@/modules/pos/pages/POSPage';
+import OrderManagementPage from "@/modules/order/pages/OrderManagement";
 
 const ADMIN_ONLY = ["ADMIN"];
 const ADMIN_AND_MANAGER = ["ADMIN", "STORE_MANAGER"];
@@ -61,6 +62,7 @@ export default function AppRoutes() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/reports" element={<ReportsPage />} />
         <Route path="/admin/promotions" element={<PromotionPage />} />
+        <Route path="/admin/orders" element={<OrderManagementPage />} />
       </Route>
 
       <Route element={<PrivateRoutes allowedRoles={PRODUCT_ROLES} />}>
